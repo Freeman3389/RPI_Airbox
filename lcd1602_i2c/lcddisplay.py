@@ -1,6 +1,8 @@
 import I2C_LCD_driver
 import time,csv
 mylcd = I2C_LCD_driver.lcd()
+sensor = None
+sensor_reading = None
 
 def dht_reading(sensor):
     # Get DHT sensor readings from sensor_csv file
