@@ -94,23 +94,23 @@ Shell command to walk through this tree :
 	snmpwalk -v 2c -c netcomm localhost -m all -M/ .1.3.6.1.4.1.16813
 """
 
-def adafruit_dht(dht_pin):
-    #update snmp data from Adafruit DHT sensor
-    (humidity, temperature) = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, dht_pin)
-    if humidity is not None and temperature is not None:
-        return (humidity, temperature)
-    else:
-        return ('Failed to get reading. Try again!')    
+#def adafruit_dht(dht_pin):
+#    #update snmp data from Adafruit DHT sensor
+#    (humidity, temperature) = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, dht_pin)
+#    if humidity is not None and temperature is not None:
+#        return (humidity, temperature)
+#    else:
+#        return ('Failed to get reading. Try again!')    
 
-#def dht_reading(sensor):
-#    sensor_location = 'QRDC-QMS-ServerRoom'
-#    sensor_csv = '/home/pi/projects/temp-and-humidity/sensor-values/'+sensor+'_'+sensor_location+'_latest_value.csv'
-#    with open(sensor_csv,'rb') as file:
-#        csvfile=csv.reader(file, delimiter=',')
-#        next(csvfile, None)
-#        for row in csvfile:
-#           sensor_reading=row[1]
-#    return sensor_reading
+def dht_reading(sensor):
+    sensor_location = 'QRDC-QMS-ServerRoom'
+    sensor_csv = '/home/pi/projects/temp-and-humidity/sensor-values/'+sensor+'_'+sensor_location+'_latest_value.csv'
+    with open(sensor_csv,'rb') as file:
+        csvfile=csv.reader(file, delimiter=',')
+        next(csvfile, None)
+        for row in csvfile:
+           sensor_reading=row[1]
+    return sensor_reading
 
 def update_data():
     """Update snmp's data from psutil and sensor"""
@@ -167,13 +167,13 @@ def update_data():
 #        pdb.set_trace()
 
     # Get Reading of GPIO Sensors from csv file
-#    for sensor in sensors:
-#        oid=pp.encode(sensor)
-#        pp.add_str('1.10.1.'+oid,sensor)
-#        if sensor == 'humidity':
-#            pp.add_gau('1.10.2.'+oid,dht_reading(sensor))
-#        elif sensor == 'temperature':
-#            pp.add_gau('1.10.3.'+oid,dht_reading(sensor))
+    for sensor in sensors:
+        oid=pp.encode(sensor)
+        pp.add_str('1.10.1.'+oid,sensor)
+        if sensor == 'humidity':
+            pp.add_gau('1.10.2.'+oid,dht_reading(sensor))
+        elif sensor == 'temperature':
+            pp.add_gau('1.10.3.'+oid,dht_reading(sensor))
         #pdb.set_trace()
 
 def main():
