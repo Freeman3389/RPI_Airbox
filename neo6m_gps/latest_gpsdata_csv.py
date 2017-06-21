@@ -12,7 +12,7 @@ from datetime import datetime, date
 gpsd = None                  #seting the global variable
 os.system('clear')           #clear the terminal (optional)
 sensor_location              = "living-room"
-latest_gps_file_path         = "/opt/RPi_Airbox/ssensor-values/gps_" + sensor_location + "_latest_value.csv"
+latest_gps_file_path         = "/opt/RPi_Airbox/sensor-values/gps_" + sensor_location + "_latest_value.csv"
 csv_header_gps               = "timestamp,latitude,longitude,altitude\n"
 csv_entry_format             = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
 sec_between_log_entries      = 60
