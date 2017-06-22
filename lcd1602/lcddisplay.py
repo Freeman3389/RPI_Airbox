@@ -3,11 +3,12 @@ import time,csv
 mylcd = I2C_LCD_driver.lcd()
 sensor = None
 sensor_reading = None
+data_path = '/opt/RPi_Airbox/monitor_web/sensor-values/'
 
 def dht_reading(sensor):
     # Get DHT sensor readings from sensor_csv file
     sensor_location = 'living-room'
-    sensor_csv = '/home/pi/projects/temp-and-humidity/sensor-values/'+sensor+'_'+sensor_location+'_latest_value.csv'
+    sensor_csv = data_path+sensor+'_'+sensor_location+'_latest_value.csv'
     with open(sensor_csv,'rb') as file:
         csvfile=csv.reader(file, delimiter=',')
         next(csvfile, None)
