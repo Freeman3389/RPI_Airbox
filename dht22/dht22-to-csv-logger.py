@@ -1,4 +1,3 @@
-
 # Written by David Neuy
 # Version 0.1.0 @ 03.12.2014
 # This script was first published at: http://www.home-automation-community.com/
@@ -10,34 +9,32 @@ import os, sys, Adafruit_DHT, time
 from datetime import datetime, date
 from apscheduler.schedulers.background import BackgroundScheduler
 
+#DHT22 specific parameters
 sensor                       = Adafruit_DHT.AM2302 #DHT11/DHT22/AM2302
 pin                          = 4
-sensor_name                  = "living-room"
-hist_temperature_file_path   = "/opt/RPi_Airbox/monitor_web/sensor-values/temperature_" + sensor_name + "_log_" + str(date.today().year) + ".csv"
-latest_temperature_file_path = "/opt/RPi_Airbox/monitor_web/sensor-values/temperature_" + sensor_name + "_latest_value.csv"
-hist_humidity_file_path      = "/opt/RPi_Airbox/monitor_web/sensor-values/humidity_" + sensor_name + "_log_" + str(date.today().year) + ".csv"
-latest_humidity_file_path    = "/opt/RPi_Airbox/monitor_web/sensor-values/humidity_" + sensor_name + "_latest_value.csv"
-csv_header_temperature       = "timestamp,temperature_in_celsius\n"
-csv_header_humidity          = "timestamp,relative_humidity\n"
+#csv files related parameters
+sensor_location              = "living-room"
+sensor_name                  = "DHT22"
+sensor_reading_dict          = dict(zip(["temperatureC","humidity"],[0.0,0.0]))
+base_path                    = "/opt/RPi_Airbox/monitor_web/sensor-values/"
+hist_sensor_file_path        = base_path + sensor_name + "_" + sensor_location + "_log_" + datetime.date.today().strftime('%Y_%m') + ".csv"
+latest_sensor_file_path      = base_path + sensor_name + "_" + sensor_location + "_latest_value.csv"
+headers_sensor_readings      = ",".join([str(item) for item in sensor_reading_list])
+csv_header_sensor            = "timestamp," + (",".join(sensor_reading_dict.keys())) + "\n"
 csv_entry_format             = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
-sec_between_log_entries      = 60
-latest_humidity              = 0.0
-latest_temperature           = 0.0
+sec_between_log_entries      = 300
 latest_value_datetime        = None
 
-def write_header(file_handle, csv_header):
-  file_handle.write(csv_header)
-
 def write_value(file_handle, datetime, value):
-  line = csv_entry_format.format(datetime, value)
-  file_handle.write(line)
-  file_handle.flush()
+    line = csv_entry_format.format(datetime, value)
+    file_handle.write(line)
+    file_handle.flush()
 
 def open_file_ensure_header(file_path, mode, csv_header):
-  f = open(file_path, mode, os.O_NONBLOCK)
-  if os.path.getsize(file_path) <= 0:
-    write_header(f, csv_header)
-  return f
+    f = open(file_path, mode, os.O_NONBLOCK)
+    if os.path.getsize(file_path) <= 0:
+        f.write(csv_header)
+    return f
 
 def write_hist_value_callback():
   write_value(f_hist_temp, latest_value_datetime, latest_temperature)
