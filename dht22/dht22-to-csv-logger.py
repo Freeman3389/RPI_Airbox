@@ -30,7 +30,7 @@ def write_value(file_handle, datetime, value):
     file_handle.write(line)
     file_handle.flush()
 
-def open_file_ensure_header(file_path, mode, csv_header):
+def open_file_write_header(file_path, mode, csv_header):
     f = open(file_path, mode, os.O_NONBLOCK)
     if os.path.getsize(file_path) <= 0:
         f.write(csv_header)
@@ -41,13 +41,13 @@ def write_hist_value_callback():
   write_value(f_hist_hum, latest_value_datetime, latest_humidity)
 
 def write_latest_value():
-  with open_file_ensure_header(latest_temperature_file_path, 'w', csv_header_temperature) as f_latest_value:  #open and truncate
+  with open_file_write_header(latest_temperature_file_path, 'w', csv_header_temperature) as f_latest_value: 
     write_value(f_latest_value, latest_value_datetime, latest_temperature)
-  with open_file_ensure_header(latest_humidity_file_path, 'w', csv_header_humidity) as f_latest_value:  #open and truncate
+  with open_file_write_header(latest_humidity_file_path, 'w', csv_header_humidity) as f_latest_value:  
     write_value(f_latest_value, latest_value_datetime, latest_humidity)
 
-f_hist_temp = open_file_ensure_header(hist_temperature_file_path, 'a', csv_header_temperature)
-f_hist_hum  = open_file_ensure_header(hist_humidity_file_path, 'a', csv_header_humidity)
+f_hist_temp = open_file_write_header(hist_temperature_file_path, 'a', csv_header_temperature)
+f_hist_hum  = open_file_write_header(hist_humidity_file_path, 'a', csv_header_humidity)
 
 print "Ignoring first 2 sensor values to improve quality..."
 for x in range(2):
@@ -61,13 +61,14 @@ scheduler.start()
 print "Started interval timer which will be called the first time in {0} seconds.".format(sec_between_log_entries);
 
 try:
-  while True:
-    hum, temp = Adafruit_DHT.read_retry(sensor, pin)
-    if hum is not None and temp is not None:
-      latest_humidity, latest_temperature = hum, temp
-      latest_value_datetime = datetime.today()
-      write_latest_value()
-    time.sleep(1)
+    while True:
+        sensor_readings=list(Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, 4))
+		sensor_readings= ["%.2f" % member for member in sensor_readings]
+        if hum is not None and temp is not None:
+            latest_humidity, latest_temperature = hum, temp
+            latest_value_datetime = datetime.today()
+            write_latest_value()
+        time.sleep(1)
 except (KeyboardInterrupt, SystemExit):
   scheduler.shutdown()
 
