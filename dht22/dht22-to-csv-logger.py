@@ -10,21 +10,34 @@ from datetime import datetime, date
 from apscheduler.schedulers.background import BackgroundScheduler
 
 #DHT22 specific parameters
-sensor                       = Adafruit_DHT.AM2302 #DHT11/DHT22/AM2302
+sensor                       = Adafruit_DHT.AM2302
 pin                          = 4
 #csv files related parameters
 sensor_location              = "living-room"
-sensor_name                  = "DHT22"
-sensor_reading_dict          = dict(zip(["temperatureC","humidity"],[0.0,0.0]))
+sensor_readings_list         = ["humidity","temperature"]
+record_types_list            = ["latest","history"]
 base_path                    = "/opt/RPi_Airbox/monitor_web/sensor-values/"
 hist_sensor_file_path        = base_path + sensor_name + "_" + sensor_location + "_log_" + datetime.date.today().strftime('%Y_%m') + ".csv"
 latest_sensor_file_path      = base_path + sensor_name + "_" + sensor_location + "_latest_value.csv"
-headers_sensor_readings      = ",".join([str(item) for item in sensor_reading_list])
-csv_header_sensor            = "timestamp," + (",".join(sensor_reading_dict.keys())) + "\n"
+csv_header_readings          =   
 csv_entry_format             = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
 sec_between_log_entries      = 300
 latest_value_datetime        = None
 
+
+def get_sensor_readings(sensor, pin):
+    dht22_readings=Adafruit_DHT.read_retry(sensor, pin)
+	if all(dht22_readings):
+	    return (','.join(format(f, '.3f') for f in dht22_readings))
+
+def get_readings_parameters(reading, type)
+    if type == 'history_file_path':
+        return (base_path + reading + "_" + sensor_location + "_log_" + datetime.date.today().strftime('%Y_%m') + ".csv")
+	elif type == 'latest_file_path':
+	    return (base_path + reading + "_" + sensor_location + "_latest_value.csv")
+	elif type == 'csv_header_reading'
+	    return ("timestamp," + reading + "\n")
+	
 def write_value(file_handle, datetime, value):
     line = csv_entry_format.format(datetime, value)
     file_handle.write(line)
@@ -37,17 +50,31 @@ def open_file_write_header(file_path, mode, csv_header):
     return f
 
 def write_hist_value_callback():
+    for index, reading in enumerate(sensor_readings_list, start=0):
+	    write_value(,latest_value_datetime, latest_temperature)
   write_value(f_hist_temp, latest_value_datetime, latest_temperature)
   write_value(f_hist_hum, latest_value_datetime, latest_humidity)
 
-def write_latest_value():
-  with open_file_write_header(latest_temperature_file_path, 'w', csv_header_temperature) as f_latest_value: 
-    write_value(f_latest_value, latest_value_datetime, latest_temperature)
-  with open_file_write_header(latest_humidity_file_path, 'w', csv_header_humidity) as f_latest_value:  
-    write_value(f_latest_value, latest_value_datetime, latest_humidity)
+def write_latest_value(type):
+i=0
+j=0
+for reading in sensor_readings_list:
+    for record in record_types_list:
+	    if record == 'latest':
+		    with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value: 
+    		    write_value(f_latest_value, latest_value_datetime, latest_sensor_returns[i])
+		elif record == 'history':
+		    with open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:  
+                write_value(f_latest_value, latest_value_datetime, latest_sensor_returns[i])
+		j+=1
+	i+=1
+i=0
+j=0
+  
+f_history_values =[]
+for index, reading in enumerate(sensor_readings_list, start=0):
+    f_history_values = open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading'))
 
-f_hist_temp = open_file_write_header(hist_temperature_file_path, 'a', csv_header_temperature)
-f_hist_hum  = open_file_write_header(hist_humidity_file_path, 'a', csv_header_humidity)
 
 print "Ignoring first 2 sensor values to improve quality..."
 for x in range(2):
@@ -62,13 +89,12 @@ print "Started interval timer which will be called the first time in {0} seconds
 
 try:
     while True:
-        sensor_readings=list(Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, 4))
-		sensor_readings= ["%.2f" % member for member in sensor_readings]
-        if hum is not None and temp is not None:
-            latest_humidity, latest_temperature = hum, temp
-            latest_value_datetime = datetime.today()
-            write_latest_value()
-        time.sleep(1)
+	    sensor_returns = get_sensor_readings(sensor, pin)
+		# Make sure the sequence of return values are the same with sensor_readings_list 
+        latest_sensor_returns = list(sensor_returns)
+        latest_value_datetime = datetime.today()
+        write_latest_value()
+    time.sleep(1)
 except (KeyboardInterrupt, SystemExit):
-  scheduler.shutdown()
+    scheduler.shutdown()
 
