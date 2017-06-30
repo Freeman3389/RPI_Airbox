@@ -28,8 +28,14 @@ latest_value_datetime        = None
 def get_sensor_readings(sensor, pin):
     dht22_readings=Adafruit_DHT.read_retry(sensor, pin)
 	if all(dht22_readings):
-	    return (','.join(format(f, '.3f') for f in dht22_readings))
+	    latest_sensor_readings = map(lambda x: float('%0.2f' % x), dht22_readings
+	    return (map(lambda X: float('%0.2f' % x), dht22_readings))
 
+def reading_type_dict(category)
+    # generate file_path_dict = {('temperature','latest'):'latest_file_path', ('temperature','history'):'history_file_path' ....}
+	# generate csv_header_dict = {'temperature':'Timestamp, Temperature/n', 'humidity':'Timestamp, Humidity/n'}
+			
+		
 def get_readings_parameters(reading, type)
     if type == 'history_file_path':
         return (base_path + reading + "_" + sensor_location + "_log_" + datetime.date.today().strftime('%Y_%m') + ".csv")
@@ -50,22 +56,23 @@ def open_file_write_header(file_path, mode, csv_header):
     return f
 
 def write_hist_value_callback():
-    for index, reading in enumerate(sensor_readings_list, start=0):
-	    write_value(,latest_value_datetime, latest_temperature)
-  write_value(f_hist_temp, latest_value_datetime, latest_temperature)
-  write_value(f_hist_hum, latest_value_datetime, latest_humidity)
+    for f, v in zip(f_history_values, latest_reading_value):
+	    write_value(f, latest_value_datetime, v)
 
+def (type):
+		
+		
 def write_latest_value(type):
 i=0
 j=0
 for reading in sensor_readings_list:
     for record in record_types_list:
 	    if record == 'latest':
-		    with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value: 
-    		    write_value(f_latest_value, latest_value_datetime, latest_sensor_returns[i])
+		    with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_readings')) as f_latest_value: 
+    		    write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
 		elif record == 'history':
-		    with open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:  
-                write_value(f_latest_value, latest_value_datetime, latest_sensor_returns[i])
+		    with open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'w', get_readings_parameters(reading, 'csv_header_readings')) as f_latest_value:  
+                write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
 		j+=1
 	i+=1
 i=0
@@ -78,7 +85,7 @@ for index, reading in enumerate(sensor_readings_list, start=0):
 
 print "Ignoring first 2 sensor values to improve quality..."
 for x in range(2):
-  Adafruit_DHT.read_retry(sensor, pin)
+    Adafruit_DHT.read_retry(sensor, pin)
 
 print "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi..."
 #create timer that is called every n seconds, without accumulating delays as when using sleep
@@ -89,9 +96,7 @@ print "Started interval timer which will be called the first time in {0} seconds
 
 try:
     while True:
-	    sensor_returns = get_sensor_readings(sensor, pin)
-		# Make sure the sequence of return values are the same with sensor_readings_list 
-        latest_sensor_returns = list(sensor_returns)
+	    latest_reading_value = get_sensor_readings(sensor, pin)
         latest_value_datetime = datetime.today()
         write_latest_value()
     time.sleep(1)
