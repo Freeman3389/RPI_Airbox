@@ -6,7 +6,7 @@
 # provide a link to 'http://www.home-automation-community.com/'. 
 
 #install dependency with 'sudo easy_install apscheduler' NOT with 'sudo pip install apscheduler'
-import os, sys, Adafruit_DHT, time
+import os, sys, Adafruit_DHT, time, pdb
 from datetime import datetime, date
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -41,14 +41,17 @@ def open_file_ensure_header(file_path, mode, csv_header):
 
 def write_hist_value_callback():
   write_value(f_hist_temp, latest_value_datetime, latest_temperature)
+  pdb.set_trace()
   write_value(f_hist_hum, latest_value_datetime, latest_humidity)
 
 def write_latest_value():
   with open_file_ensure_header(latest_temperature_file_path, 'w', csv_header_temperature) as f_latest_value:  #open and truncate
     write_value(f_latest_value, latest_value_datetime, latest_temperature)
+  pdb.set_trace()
   with open_file_ensure_header(latest_humidity_file_path, 'w', csv_header_humidity) as f_latest_value:  #open and truncate
     write_value(f_latest_value, latest_value_datetime, latest_humidity)
 
+pdb.set_trace()
 f_hist_temp = open_file_ensure_header(hist_temperature_file_path, 'a', csv_header_temperature)
 f_hist_hum  = open_file_ensure_header(hist_humidity_file_path, 'a', csv_header_humidity)
 
