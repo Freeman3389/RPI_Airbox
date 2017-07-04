@@ -1,8 +1,8 @@
 # Written by David Neuy
 # Version 0.1.0 @ 03.12.2014
 # This script was first published at: http://www.home-automation-community.com/
-# You may republish it as is or publish a modified version only when you 
-# provide a link to 'http://www.home-automation-community.com/'. 
+# You may republish it as is or publish a modified version only when you
+# provide a link to 'http://www.home-automation-community.com/'.
 # Re-written by Freeman Lee
 # Version 0.1.0 @ 2017.06.30
 
@@ -12,16 +12,16 @@ from datetime import datetime, date
 from apscheduler.schedulers.background import BackgroundScheduler
 
 #DHT22 specific parameters
-sensor                       = Adafruit_DHT.AM2302
-pin                          = 4
+sensor = Adafruit_DHT.AM2302
+pin  = 4
 #csv files related parameters
-sensor_location              = "living-room"
-sensor_readings_list         = ["humidity","temperature"]
-record_types_list            = ["latest","history"]
-base_path                    = "/opt/RPi_Airbox/monitor_web/sensor-values/test/"
-csv_entry_format             = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
-sec_between_log_entries      = 60
-latest_value_datetime        = None
+sensor_location  = "living-room"
+sensor_readings_list  = ["humidity","temperature"]
+record_types_list = ["latest","history"]
+base_path  = "/opt/RPi_Airbox/monitor_web/sensor-values/test/"
+csv_entry_format  = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
+sec_between_log_entries  = 60
+latest_value_datetime  = None
 
 
 def get_sensor_readings(sensor, pin):
@@ -34,7 +34,7 @@ def get_sensor_readings(sensor, pin):
     # generate file_path_dict = {('temperature','latest'):'latest_file_path', ('temperature','history'):'history_file_path' ....}
     # generate csv_header_dict = {'temperature':'Timestamp, Temperature/n', 'humidity':'Timestamp, Humidity/n'}
 
-	
+
 def get_readings_parameters(reading, type):
     if type == 'history_file_path':
         return (base_path + reading + "_" + sensor_location + "_log_" + datetime.today().strftime('%Y_%m') + ".csv")
@@ -45,12 +45,10 @@ def get_readings_parameters(reading, type):
     else:
         return None
 
-
 def write_value(file_handle, datetime, value):
     line = csv_entry_format.format(datetime, value)
     file_handle.write(line)
     file_handle.flush()
-
 
 def open_file_write_header(file_path, mode, csv_header):
     pdb.set_trace()
@@ -59,26 +57,22 @@ def open_file_write_header(file_path, mode, csv_header):
         f.write(csv_header)
     return f
 
-
 def write_hist_value_callback():
     for f, v in zip(f_history_values, latest_reading_value):
         write_value(f, latest_value_datetime, v)
 
-	
 def write_latest_value():
     i=0
     for reading in sensor_readings_list:
         pdb.set_trace()
-        with open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value: 
+        with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
             write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
         i+=1
     i=0
-    
 
 f_history_values =[]
 for index, reading in enumerate(sensor_readings_list, start=0):
     f_history_values.append(open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
-
 
 print "Ignoring first 2 sensor values to improve quality..."
 for x in range(2):
@@ -97,6 +91,14 @@ try:
         latest_reading_value = get_sensor_readings(sensor, pin)
         latest_value_datetime = datetime.today()
         write_latest_value()
-    time.sleep(1)
+        time.sleep(1)
+except IOError as ioer:
+    print  ioer + " , wait 10 seconds to restart."
+    latest_reading_value = [0,0]
+    time.sleep(10)
+    pass
 except (KeyboardInterrupt, SystemExit):
     scheduler.shutdown()
+    latest_reading_value=[]
+    latest_file_path = None
+    history_file_path = None
