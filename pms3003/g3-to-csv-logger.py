@@ -1,5 +1,5 @@
 #!/bin/python
-import os,serial, time, sys, logging, pdb
+import os, serial, time, sys, logging, pdb
 from struct import *
 from datetime import datetime, date
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -7,11 +7,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 serial_device = "/dev/ttyS0"
 
 #csv files related parameters
-sensor_location  = "living-room"
-sensor_readings_list  = ["pm1_cf", "pm10_cf", "pm25_cf", "pm1","pm10", "pm25"]
+sensor_location = "living-room"
+sensor_readings_list = ["pm1_cf", "pm10_cf", "pm25_cf", "pm1","pm10", "pm25"]
 record_types_list = ["latest","history"]
-base_path  = "/opt/RPi_Airbox/monitor_web/sensor-values/test/"
-csv_entry_format  = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
+base_path = "/opt/RPi_Airbox/monitor_web/sensor-values/test/"
+csv_entry_format = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
 sec_between_log_entries  = 60
 latest_value_datetime  = None
 debug=0
