@@ -21,6 +21,7 @@ record_types_list = ["latest","history"]
 base_path  = "/opt/RPi_Airbox/monitor_web/sensor-values/test/"
 csv_entry_format  = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
 sec_between_log_entries  = 60
+latest_reading_value = []
 latest_value_datetime  = None
 
 
@@ -91,7 +92,7 @@ try:
         latest_reading_value = get_sensor_readings(sensor, pin)
         latest_value_datetime = datetime.today()
         write_latest_value()
-        time.sleep(1)
+        time.sleep(60)
 except IOError as ioer:
     print  ioer + " , wait 10 seconds to restart."
     latest_reading_value = [0,0]
