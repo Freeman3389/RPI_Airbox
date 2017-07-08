@@ -25,4 +25,4 @@ try:
 
 except KeyboardInterrupt:
     mylcd.lcd_clear()
-    print ("User canceled, screen clear!!")
+    print "User canceled, screen clear!!"

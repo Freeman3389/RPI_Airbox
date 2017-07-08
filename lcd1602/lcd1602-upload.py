@@ -45,16 +45,15 @@ def main():
                 time.sleep(1)
             mylcd.lcd_clear()
             # Display PMx values on LCD
-            mylcd.lcd_display_string("PM1.0:" + str(get_reading_csv('pm1-at')), 1, 0)
-            mylcd.lcd_display_string("PM2.5:" + str(get_reading_csv('pm25-at')), 1, 9)
-            mylcd.lcd_display_string("PM10 :" + str(get_reading_csv('pm25-at')), 2, 0)
+            mylcd.lcd_display_string("PM 2.5: " + str(get_reading_csv('pm25-at')), 1, 0)
+            mylcd.lcd_display_string("PM 10 : " + str(get_reading_csv('pm25-at')), 2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()
             # Display GPS Latitude and Longitude on LCD
-            mylcd.lcd_display_string("Lat: N" + str(get_reading_csv('latitude')), 1, 0)
-            mylcd.lcd_display_string("Lon: E" + str(get_reading_csv('longitude')), 2, 0)
+            mylcd.lcd_display_string("Lat: N " + str(get_reading_csv('latitude')), 1, 0)
+            mylcd.lcd_display_string("Lon: E " + str(get_reading_csv('longitude')), 2, 0)
             time.sleep(update_interval)
-            mylcd.lcd_clear()          
+            mylcd.lcd_clear()      
         except (KeyboardInterrupt, SystemExit):
             mylcd.lcd_clear()
             print "User canceled, screen clear!!"
@@ -63,7 +62,6 @@ def main():
             syslog.syslog(syslog.LOG_WARNING, "I/O error({0}): {1}".format(e.errno, e.strerror))
             mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
             mylcd.lcd_display_string("CANNOT Get data.", 2, 0)
-            time.sleep(10)
         continue
 
 if __name__ == "__main__":
