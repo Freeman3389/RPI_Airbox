@@ -24,8 +24,8 @@ with open('/opt/RPi_Airbox/settings.json') as json_handle:
 sensor_location = configs['global']['sensor_location']
 sensor_readings_list = configs['pms3003']['sensor_readings_list']
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
-latest_log_interval = configs['pms3003']['latest_log_interval']
-history_log_interval = configs['pms3003']['history_log_interval']
+latest_log_interval = int(configs['pms3003']['latest_log_interval'])
+history_log_interval = int(configs['pms3003']['history_log_interval'])
 csv_entry_format = configs['pms3003']['csv_entry_format']
 # Initial variables
 latest_value_datetime = None

@@ -21,7 +21,7 @@ with open('/opt/RPi_Airbox/settings.json') as json_handle:
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
-update_interval = configs['thingspeak']['update_interval']
+update_interval = int(configs['thingspeak']['update_interval'])
 # Initial variables
 sensors = ['temperature', 'humidity', 'pm1-at', 'pm25-at', 'pm10-at']  # Define all the sensor readings uploading to Thingspeak
 latest_reading_values = []

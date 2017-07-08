@@ -23,8 +23,8 @@ with open('/opt/RPi_Airbox/settings.json') as json_handle:
 sensor_location = configs['global']['sensor_location']
 sensor_readings_list = configs['neo6m']['sensor_readings_list']
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
-latest_log_interval = configs['neo6m']['latest_log_interval']
-history_log_interval = configs['neo6m']['history_log_interval']
+latest_log_interval = int(configs['neo6m']['latest_log_interval'])
+history_log_interval = int(configs['neo6m']['history_log_interval'])
 csv_entry_format = configs['neo6m']['csv_entry_format']
 # Initial variables
 gpsd = None                  # seting the global variable

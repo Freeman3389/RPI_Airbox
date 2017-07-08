@@ -28,8 +28,8 @@ with open('/opt/RPi_Airbox/settings.json') as json_handle:
 sensor_location = configs['global']['sensor_location']
 sensor_readings_list = configs['dht22']['sensor_readings_list']
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
-latest_log_interval = configs['dht22']['latest_log_interval']
-history_log_interval = configs['dht22']['history_log_interval']
+latest_log_interval = int(configs['dht22']['latest_log_interval'])
+history_log_interval = int(configs['dht22']['history_log_interval'])
 csv_entry_format = configs['dht22']['csv_entry_format']
 # Initial variables
 latest_reading_value = []

@@ -13,7 +13,7 @@ import time, csv, sys, os, syslog, json
 with open('/opt/RPi_Airbox/settings.json') as json_handle:
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
-update_interval = configs['lcd1602']['update_interval']
+update_interval = int(configs['lcd1602']['update_interval'])
 # initial variables
 mylcd = I2C_LCD_driver.lcd()
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
