@@ -40,19 +40,19 @@ def main():
             idx = 0
             for idx in range(9):
                 mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
-                mylcd.lcd_display_string("T:", get_reading_csv('temperature'), "c", 2, 0)
-                mylcd.lcd_display_string("H:", get_reading_csv('humidity'), "%", 2, 9)
+                mylcd.lcd_display_string("T:" + str(get_reading_csv('temperature')) + "c", 2, 0)
+                mylcd.lcd_display_string("H:" + str(get_reading_csv('humidity')) + "%", 2, 9)
                 time.sleep(1)
             mylcd.lcd_clear()
             # Display PMx values on LCD
-            mylcd.lcd_display_string("PM1.0:", get_reading_csv('pm1-at'), 1, 0)
-            mylcd.lcd_display_string("PM2.5:", get_reading_csv('pm25-at'), 1, 9)
-            mylcd.lcd_display_string("PM10 :", get_reading_csv('pm25-at'), 2, 0)
+            mylcd.lcd_display_string("PM1.0:" + str(get_reading_csv('pm1-at')), 1, 0)
+            mylcd.lcd_display_string("PM2.5:" + str(get_reading_csv('pm25-at')), 1, 9)
+            mylcd.lcd_display_string("PM10 :" + str(get_reading_csv('pm25-at')), 2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()
             # Display GPS Latitude and Longitude on LCD
-            mylcd.lcd_display_string("Lat: N", get_reading_csv('latitude'), 1, 0)
-            mylcd.lcd_display_string("Lon: E", get_reading_csv('longitude'), 2, 0)
+            mylcd.lcd_display_string("Lat: N" + str(get_reading_csv('latitude')), 1, 0)
+            mylcd.lcd_display_string("Lon: E" + str(get_reading_csv('longitude')), 2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()          
         except (KeyboardInterrupt, SystemExit):

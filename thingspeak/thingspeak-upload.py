@@ -63,7 +63,7 @@ while True:
         conn = httplib.HTTPConnection("api.thingspeak.com:80")
         conn.request("POST", "/update", params_public, headers)
         res = conn.getresponse()
-        # syslog.syslog(syslog.LOG_INFO, 'Thingspeak HTTP Response: ', res.status, ' ', res.reason)
+        syslog.syslog(syslog.LOG_INFO, 'Thingspeak HTTP Response: ' + str(res.status) + ' ' + res.reason)
         data = res.read()
     except (KeyboardInterrupt, SystemExit):
         print "Exiting on user request."
