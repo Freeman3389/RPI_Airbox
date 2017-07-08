@@ -22,8 +22,8 @@ from datetime import datetime
 # install dependency with 'sudo easy_install apscheduler' NOT with 'sudo pip install apscheduler'
 from apscheduler.schedulers.background import BackgroundScheduler
 
-# Get settings from '../settings.json'
-with open('../settings.json') as json_handle:
+# Get settings from 'settings.json'
+with open('/opt/RPi_Airbox/settings.json') as json_handle:
     configs = json.load(json_handle)
 sensor_location = configs['global']['sensor_location']
 sensor_readings_list = configs['dht22']['sensor_readings_list']

@@ -16,8 +16,8 @@ import syslog
 import json
 
 
-# Get settings from '../settings.json'
-with open('../settings.json') as json_handle:
+# Get settings from 'settings.json'
+with open('/opt/RPi_Airbox/settings.json') as json_handle:
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
