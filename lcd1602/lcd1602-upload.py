@@ -53,7 +53,7 @@ def main():
             mylcd.lcd_display_string("Lon: E" + get_reading_csv('longitude'),2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()          
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         mylcd.lcd_clear()
         print ("User canceled, screen clear!!")
 

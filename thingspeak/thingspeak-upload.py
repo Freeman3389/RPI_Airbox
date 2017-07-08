@@ -57,7 +57,6 @@ while True:
         {'field1': latest_reading_values[0], 'field2': latest_reading_values[1],
          'field3': latest_reading_values[2], 'field4': latest_reading_values[3],
          'field5': latest_reading_values[4], 'key': 'MCLBKVWDVXY6IH9F'})
-    print params_public
     headers = {"Content-type": "application/x-www-form-urlencoded",
                "Accept": "text/plain"}
     try:
