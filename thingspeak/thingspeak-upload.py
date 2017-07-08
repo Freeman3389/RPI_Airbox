@@ -23,7 +23,7 @@ data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
 update_interval = configs['thingspeak']['update_interval']
 # Initial variables
-sensors = ['temperature', 'humidity', 'pm1-at', 'pm25-at', 'pm10-at']
+sensors = ['temperature', 'humidity', 'pm1-at', 'pm25-at', 'pm10-at']  # Define all the sensor readings uploading to Thingspeak
 latest_reading_values = []
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 

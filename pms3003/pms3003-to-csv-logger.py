@@ -153,12 +153,14 @@ def get_readings_parameters(reading, type):
 
 
 def write_value(file_handle, datetime, value):
+    """Pass kind of reading and type to get return parameters."""
     line = csv_entry_format.format(datetime, value)
     file_handle.write(line)
     file_handle.flush()
 
 
 def open_file_write_header(file_path, mode, csv_header):
+    """Pass contents and datetime to write into target file."""
     f = open(file_path, mode, os.O_NONBLOCK)
     if os.path.getsize(file_path) <= 0:
         f.write(csv_header)
@@ -166,11 +168,13 @@ def open_file_write_header(file_path, mode, csv_header):
 
 
 def write_hist_value_callback():
+    """Check if the target file is new, and write header."""
     for f, v in zip(f_history_values, latest_reading_value):
         write_value(f, latest_value_datetime, v)
 
 
 def write_latest_value():
+    """For apscheduler to append latest value into history csv file."""
     i = 0
     for reading in sensor_readings_list:
         with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:

@@ -47,7 +47,7 @@ def get_sensor_readings(sensor, pin):
         return (map(lambda x: float('%0.2f' % x), dht22_readings))
     else:
         syslog.syslog(syslog.LOG_WARNING, "CANNOT get correct readings from DHT22 sensor!")
-        continue()
+        pass
 
 
 def get_readings_parameters(reading, type):

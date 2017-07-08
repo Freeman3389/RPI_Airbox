@@ -63,7 +63,7 @@ def main():
         mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
         mylcd.lcd_display_string("CANNOT Get data.", 2, 0)
         time.sleep(10)
-        continue()
+        continue
 
 if __name__ == "__main__":
     main()

@@ -58,11 +58,11 @@ class GpsPoller(threading.Thread):
 def get_readings_parameters(reading, type):
     """Pass kind of reading and type to get return parameters."""
     if type == 'history_file_path':
-        return (data_path + reading + "_" + sensor_location + "_log_" + datetime.today().strftime('%Y') + ".csv")
+        return data_path + reading + "_" + sensor_location + "_log_" + datetime.today().strftime('%Y') + ".csv"
     elif type == 'latest_file_path':
-        return (data_path + reading + "_" + sensor_location + "_latest_value.csv")
+        return data_path + reading + "_" + sensor_location + "_latest_value.csv"
     elif type == 'csv_header_reading':
-        return ("timestamp," + reading + "\n")
+        return "timestamp," + reading + "\n"
     else:
         return None
 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     except IOError as ioer:
         syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
         time.sleep(10)
-        continue()
+        pass
     finally:
         latest_reading_value = []
         latest_file_path = None

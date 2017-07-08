@@ -12,7 +12,8 @@ sensor_readings_list = ["pm1_cf", "pm10_cf", "pm25_cf", "pm1","pm10", "pm25"]
 record_types_list = ["latest","history"]
 base_path = "/opt/RPi_Airbox/monitor_web/sensor-values/test/"
 csv_entry_format = "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n"
-sec_between_log_entries  = 60
+latest_log_interval = configs['neo6m']['latest_log_interval']
+history_log_interval = configs['neo6m']['history_log_interval']
 latest_value_datetime  = None
 debug=0
 # work for pms3003
@@ -121,13 +122,13 @@ def write_hist_value_callback():
         write_value(f, latest_value_datetime, v)
 
 def write_latest_value():
-    i=0
+    i = 0
     for reading in sensor_readings_list:
         pdb.set_trace()
         with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
             write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
-        i+=1
-    i=0
+        i += 1
+    i = 0
 
 
 if __name__ == '__main__':
