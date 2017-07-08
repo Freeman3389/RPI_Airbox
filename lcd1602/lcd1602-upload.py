@@ -13,6 +13,7 @@ import time, csv, sys, os, syslog, json
 with open('/opt/RPi_Airbox/settings.json') as json_handle:
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
+sensor_location = configs['global']['sensor_location']
 update_interval = int(configs['lcd1602']['update_interval'])
 # initial variables
 mylcd = I2C_LCD_driver.lcd()
@@ -35,34 +36,34 @@ def get_reading_csv(sensor):
 def main():
     while True:
         try:
-            """Display date, time, temperature, humidity on LCD"""
+            # Display date, time, temperature, humidity on LCD
+            idx = 0
             for idx in range(9):
-                mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"),1 ,1)
-                mylcd.lcd_display_string("T:" + get_reading_csv('temperature')+"c",2 ,0)
-                mylcd.lcd_display_string("H:" + get_reading_csv('humidity')+"%",2 ,9)
+                mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
+                mylcd.lcd_display_string("T:" + get_reading_csv('temperature')+"c", 2, 0)
+                mylcd.lcd_display_string("H:" + get_reading_csv('humidity')+"%", 2, 9)
                 time.sleep(1)
             mylcd.lcd_clear()
-            """Display PMx values on LCD"""
-            mylcd.lcd_display_string("PM1.0:" + get_reading_csv('pm1-at'),1 ,0)
-            mylcd.lcd_display_string("PM2.5:" + get_reading_csv('pm25-at'),1 ,9)
-            mylcd.lcd_display_string("PM10:" + get_reading_csv('pm25-at'),2 ,0)
+            # Display PMx values on LCD
+            mylcd.lcd_display_string("PM1.0:" + get_reading_csv('pm1-at'), 1, 0)
+            mylcd.lcd_display_string("PM2.5:" + get_reading_csv('pm25-at'), 1, 9)
+            mylcd.lcd_display_string("PM10:" + get_reading_csv('pm25-at'), 2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()
-            """Display GPS Latitude and Longitude on LCD"""
-            mylcd.lcd_display_string("Lat: N" + get_reading_csv('latitude'),1 ,0)
-            mylcd.lcd_display_string("Lon: E" + get_reading_csv('longitude'),2, 0)
+            # Display GPS Latitude and Longitude on LCD
+            mylcd.lcd_display_string("Lat: N" + get_reading_csv('latitude'), 1, 0)
+            mylcd.lcd_display_string("Lon: E" + get_reading_csv('longitude'), 2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()          
-    except (KeyboardInterrupt, SystemExit):
-        mylcd.lcd_clear()
-        print ("User canceled, screen clear!!")
-
-    except IOError:
-        mylcd.lcd_clear()
-        syslog.syslog(syslog.LOG_WARNING, "I/O error({0}): {1}".format(e.errno, e.strerror)
-        mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
-        mylcd.lcd_display_string("CANNOT Get data.", 2, 0)
-        time.sleep(10)
+        except (KeyboardInterrupt, SystemExit):
+            mylcd.lcd_clear()
+            print "User canceled, screen clear!!"
+        except IOError as e:
+            mylcd.lcd_clear()
+            syslog.syslog(syslog.LOG_WARNING, "I/O error({0}): {1}".format(e.errno, e.strerror))
+            mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
+            mylcd.lcd_display_string("CANNOT Get data.", 2, 0)
+            time.sleep(10)
         continue
 
 if __name__ == "__main__":
