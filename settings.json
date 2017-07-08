@@ -1,0 +1,66 @@
+{
+  "global": {
+    "sensor_location": "living-room",
+    "base_path": "/opt/RPi_Airbox/",
+    "csv_path": "monitor_web/sensor-values/"
+  },
+  "neo6m": {
+    "status": "1",
+    "type": "input",
+    "sensor_path": "neo6m",
+    "history_log_interval": "300",
+    "latest_log_interval": "120",
+    "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.5f}\n",
+    "sensor_readings_list": [
+      "latitude",
+      "longitude",
+      "altitude"
+    ]
+  },
+  "pms3003": {
+    "status": "1",
+    "type": "input",
+    "sensor_path": "pms3003",
+    "latest_log_interval": "120",
+    "history_log_interval": "300",
+    "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.0f}\n",
+    "sensor_readings_list": [
+      "pm1-cf",
+      "pm10-cf",
+      "pm25-cf",
+      "pm1-at",
+      "pm10-at",
+      "pm25-at"
+    ]
+  },
+  "dht22": {
+    "status": "1",
+    "type": "input",
+    "sensor_path": "dht22",
+    "latest_log_interval": "120",
+    "history_log_interval": "300",
+    "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n",
+    "sensor_readings_list": [
+      "humidity",
+      "temperature"
+    ]
+  },
+  "lcd1602": {
+    "status": "1",
+    "type": "output",
+    "device_path": "lcd1602",
+    "update_interval": "10"
+  },
+  "snmp-passpersist": {
+    "status": "1",
+    "type": "output",
+    "device_path": "snmp-passpersist",
+    "update_interval": "60"
+  },
+  "thingspeak": {
+    "status": "1",
+    "type": "output",
+    "device_path": "thingspeak",
+    "update_interval": "300"
+  }
+}
