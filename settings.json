@@ -45,6 +45,19 @@
       "temperature"
     ]
   },
+    "mq2": {
+    "status": "1",
+    "type": "input",
+    "sensor_path": "mq2",
+    "latest_log_interval": "120",
+    "history_log_interval": "300",
+    "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.6f}\n",
+    "sensor_readings_list": [
+      "GAS-LPG",
+      "CO",
+      "Smoke"
+    ]
+  },
   "lcd1602": {
     "status": "1",
     "type": "output",
