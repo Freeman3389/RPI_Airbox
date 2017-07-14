@@ -59,7 +59,4 @@ target/
 .ropeproject
 *~
 
-# OSX
-.DS_Store
-.AppleDouble
 
