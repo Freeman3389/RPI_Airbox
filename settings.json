@@ -64,6 +64,12 @@
     "device_path": "lcd1602",
     "update_interval": "10"
   },
+  "sh1106": {
+    "status": "1",
+    "type": "output",
+    "device_path": "sh1106",
+    "update_interval": "10"
+  },
   "snmp-passpersist": {
     "status": "1",
     "type": "output",
