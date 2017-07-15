@@ -5,6 +5,8 @@ import time
 import logging
 import syslog
 import json
+import os
+#import pdb
 # install dependency with 'sudo easy_install apscheduler' NOT with 'sudo pip install apscheduler'
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -37,6 +39,7 @@ def get_readings_parameters(reading, type):
 
 def write_value(file_handle, datetime, value):
     """Pass contents and datetime to write into target file."""
+    #pdb.set_trace()
     line = csv_entry_format.format(datetime, value)
     file_handle.write(line)
     file_handle.flush()
@@ -87,7 +90,8 @@ try:
     syslog.syslog(syslog.LOG_INFO, "Get MQ2 Sensor Readings.")
     mq = MQ();
     while True:
-        latest_reading_value = list(mq.MQPercentage())
+        latest_reading_value = list(mq.MQPercentage().values())
+        #pdb.set_trace()
         time.sleep(latest_log_interval)
         latest_value_datetime = datetime.today()
         write_latest_value()

@@ -4,6 +4,7 @@
 import time
 import math
 import syslog
+import sys
 from MCP3008 import MCP3008
 
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
