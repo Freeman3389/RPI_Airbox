@@ -1,14 +1,15 @@
 {
   "global": {
-    "sensor_location": "living-room",
+    "sensor_location": "QTMC-ServerRoom",
+    "account": "rpisensor",
     "base_path": "/opt/RPi_Airbox/",
     "csv_path": "monitor_web/sensor-values/"
   },
   "neo6m": {
-    "status": "1",
-    "type": "input",
-    "sensor_path": "neo6m",
-    "history_log_interval": "300",
+    "status": "0",
+    "sensor_name": "neo6m",
+    "executable_path": "neo6m/neo6m-to-csv-logger.py",
+    "history_log_interval": "60",
     "latest_log_interval": "120",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.5f}\n",
     "sensor_readings_list": [
@@ -18,10 +19,10 @@
     ]
   },
   "pms3003": {
-    "status": "1",
-    "type": "input",
-    "sensor_path": "pms3003",
-    "latest_log_interval": "120",
+    "status": "0",
+    "sensor_name": "pms3003",
+    "executable_path": "pms3003/pms3003-to-csv-logger.py",
+    "latest_log_interval": "60",
     "history_log_interval": "300",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.0f}\n",
     "sensor_readings_list": [
@@ -35,9 +36,9 @@
   },
   "dht22": {
     "status": "1",
-    "type": "input",
-    "sensor_path": "dht22",
-    "latest_log_interval": "120",
+    "sensor_name": "dht22",
+    "executable_path": "dht22/dht22-to-csv-logger.py",
+    "latest_log_interval": "60",
     "history_log_interval": "300",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n",
     "sensor_readings_list": [
@@ -47,9 +48,9 @@
   },
     "mq2": {
     "status": "1",
-    "type": "input",
-    "sensor_path": "mq2",
-    "latest_log_interval": "60",
+    "sensor_name": "mq2",
+    "executable_path": "mq2/mq2-to-csv-logger.py",
+    "latest_log_interval": "10",
     "history_log_interval": "300",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.6f}\n",
     "sensor_readings_list": [
@@ -59,27 +60,27 @@
     ]
   },
   "lcd1602": {
-    "status": "1",
-    "type": "output",
-    "device_path": "lcd1602",
-    "update_interval": "10"
-  },
-  "sh1106": {
-    "status": "1",
-    "type": "output",
-    "device_path": "sh1106",
+    "status": "0",
+    "sensor_name": "lcd1602",
+    "executable_path": "lcd1602/lcd1602-upload.py",
     "update_interval": "10"
   },
   "snmp-passpersist": {
-    "status": "1",
-    "type": "output",
-    "device_path": "snmp-passpersist",
+    "status": "0",
+    "sensor_name": "snmp-passpersist",
+    "executable_path": "snmp-passpersist/snmp-passpersisit-upload.py",
     "update_interval": "60"
   },
   "thingspeak": {
-    "status": "1",
-    "type": "output",
-    "device_path": "thingspeak",
+    "status": "0",
+    "sensor_name": "thingspeak",
+    "executable_path": "thingspeak/thingspeak-upload.py",
     "update_interval": "300"
+  },
+    "sh1106": {
+    "status": "1",
+    "sensor_name": "sh1106",
+    "executable_path": "sh1106/sh1106-upload.py",
+    "update_interval": "1"
   }
 }
