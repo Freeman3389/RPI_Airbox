@@ -15,7 +15,7 @@ account = configs['global']['account']
 def get_enabled_attrs(dictionary, sensor):
     """Get specific attribute if the sensor is enabled."""
     if dictionary.get(sensor).get('status') == '1':
-        return (dictionary.get(sensor).get('sensor_name', None),    dictionary.get(sensor).get('executable_path', None))
+        return (dictionary.get(sensor).get('sensor_name', None), dictionary.get(sensor).get('executable_path', None))
     else:
         return None
 
