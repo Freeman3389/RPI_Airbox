@@ -8,10 +8,18 @@
 # Get settings from '../settings.json'
 import sys, json, syslog, os, time, subprocess, psutil, pdb
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
-with open('/opt/RPi_Airbox/settings.json') as json_handle:
+with open('settings.json') as json_handle:
     configs = json.load(json_handle)
 account = configs['global']['account']
-message_str=[]
+message_disabled = []
+message_noattr = []
+message_running = []
+message_load = []
+w = 0
+x = 0
+y = 0
+z = 0
+
 
 def index_containing_substring(the_list, substring):
     """Get index number of list where subtring contained."""
@@ -27,7 +35,7 @@ def get_enabled_attrs(dictionary, sensor):
     else:
         return None
 
-def check_process_running(cmd_path, cmd_str):
+def check_process_running(cmd_path, cmd_str, model):
     """Check if specific python script is running"""
     running_process_str = []
     for pid in psutil.pids():
@@ -37,29 +45,38 @@ def check_process_running(cmd_path, cmd_str):
             for proc_str in p.cmdline()[index + 1:len(p.cmdline())]:
                 running_process_str.append(proc_str)
     if cmd_path in running_process_str:
-        message_str.append(cmd_path + 'is running.')
+        y += 1
+        message_running.append(model)
     else:
-        message_str.append(cmd_path + ' is not running, and try to start it up.')
+        z += 1
+        message_load.append(model)
         subprocess.call(cmd_str, shell=True)
     time.sleep(0.1)
 
 def main():
     try:
+        syslog.syslog(syslog.LOG_INFO, 'Begin to check RPi_Airbox enabled scripts.')
         for model in configs.keys():
-            print model
             if model != 'global':
                 enabled_attrs = get_enabled_attrs(configs, model)
             if enabled_attrs is None:
-                message_str.append(model + ' is not enabled, skip to load it.')
+                w += 1
+                global message_disabled.append(model)
             elif not all(enabled_attrs):
-                message_str.append('some attribute of ' + model + 'is Null.')
+                x += 1
+                global message_noattr.append(model)
             else:
                 cmd_path = str(configs['global']['base_path']) + str(configs[model]['executable_path'])
                 cmd_str = str('/usr/bin/python ' + cmd_path + ' &')
-                check_process_running(cmd_path, cmd_str)
-        print "/n".join(message_str)
+                check_process_running(cmd_path, cmd_str, model)
+        message_str = 'Loader summary: Loading - ' + str(z) + ' ; Running - ' + str(y) + ' ; Disabled - ' + str(w) + ' ; No Attr - ' + str(x) + '\nLoading Model - ' + (','.join(message_load)) + '\nRunning Model - ' + (','.join(message_running)) + '\nDisabled Model - ' + (','.join(message_disabled)) + '\nNo Attribute Model - ' + (','.join(message_noattr))
+        syslog.syslog(syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str)
+        print syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str
     except BaseException:
         pass
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    print os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time)
+    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time))

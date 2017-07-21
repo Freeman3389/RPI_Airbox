@@ -83,7 +83,7 @@
     "executable_path": "thingspeak/thingspeak-upload.py",
     "update_interval": "300"
   },
-    "sh1106": {
+  "sh1106": {
     "status": "1",
     "sensor_name": "sh1106",
     "i2c_port": "1",
