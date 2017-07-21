@@ -38,7 +38,6 @@
   "dht22": {
     "status": "1",
     "sensor_name": "dht22",
-    "sensor_model": "Adafruit_DHT.AM2302",
     "gpio_pin": "4",
     "executable_path": "dht22/dht22-to-csv-logger.py",
     "latest_log_interval": "60",

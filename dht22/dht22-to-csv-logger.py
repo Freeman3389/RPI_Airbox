@@ -32,9 +32,9 @@ data_path = configs['global']['base_path'] + configs['global']['csv_path']
 latest_log_interval = int(configs['dht22']['latest_log_interval'])
 history_log_interval = int(configs['dht22']['history_log_interval'])
 csv_entry_format = configs['dht22']['csv_entry_format']
-sensor = configs['dht22']['sensor_model']
-pin = configs['dht22']['gpio_pin']
+pin = int(configs['dht22']['gpio_pin'])
 # Initial variables
+sensor = Adafruit_DHT.AM2302
 latest_reading_value = []
 latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
