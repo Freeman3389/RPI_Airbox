@@ -18,7 +18,7 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
-with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
+with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 sensor_location = configs['global']['sensor_location']
 sensor_readings_list = configs['neo6m']['sensor_readings_list']

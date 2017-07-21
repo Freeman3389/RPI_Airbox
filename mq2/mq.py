@@ -9,7 +9,7 @@ import json
 from MCP3008 import MCP3008
 
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
-with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
+with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 
 class MQ():
