@@ -10,7 +10,7 @@ import I2C_LCD_driver
 import time, csv, sys, os, syslog, json
 
 # Get settings from '../settings.json'
-with open('/opt/RPi_Airbox/settings.json') as json_handle:
+with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
@@ -45,8 +45,8 @@ def main():
                 time.sleep(1)
             mylcd.lcd_clear()
             # Display PMx values on LCD
-            mylcd.lcd_display_string("PM 2.5: " + str(get_reading_csv('pm25-at')), 1, 0)
-            mylcd.lcd_display_string("PM 10 : " + str(get_reading_csv('pm25-at')), 2, 0)
+            mylcd.lcd_display_string("PM2.5: " + str(get_reading_csv('pm25-at') + "ug/m3"), 1, 0)
+            mylcd.lcd_display_string("PM 10: " + str(get_reading_csv('pm10-at') + "ug/m3"), 2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()
             # Display GPS Latitude and Longitude on LCD

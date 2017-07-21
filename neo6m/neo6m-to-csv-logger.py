@@ -18,7 +18,7 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
-with open('/opt/RPi_Airbox/settings.json') as json_handle:
+with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 sensor_location = configs['global']['sensor_location']
 sensor_readings_list = configs['neo6m']['sensor_readings_list']
@@ -134,9 +134,7 @@ if __name__ == '__main__':
     except IOError as ioer:
         syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
         time.sleep(10)
-        pass
     finally:
         latest_reading_value = []
         latest_file_path = None
         history_file_path = None
-        pass

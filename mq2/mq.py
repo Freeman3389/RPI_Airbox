@@ -5,14 +5,17 @@ import time
 import math
 import syslog
 import sys
+import json
 from MCP3008 import MCP3008
 
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
+with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
+    configs = json.load(json_handle)
 
 class MQ():
 
     ######################### Hardware Related Macros #########################
-    MQ_PIN                       = 0        # define which analog input channel you are going to use (MCP3008)
+    MQ_PIN                       = configs['mq2']['mq_channel']        # define which analog input channel you are going to use (MCP3008)
     RL_VALUE                     = 5        # define the load resistance on the board, in kilo ohms
     RO_CLEAN_AIR_FACTOR          = 9.83     # RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
                                             # which is derived from the chart in datasheet

@@ -21,6 +21,7 @@
   "pms3003": {
     "status": "0",
     "sensor_name": "pms3003",
+    "serial_device": "/dev/ttyS0",
     "executable_path": "pms3003/pms3003-to-csv-logger.py",
     "latest_log_interval": "60",
     "history_log_interval": "300",
@@ -37,6 +38,8 @@
   "dht22": {
     "status": "1",
     "sensor_name": "dht22",
+    "sensor_model": "Adafruit_DHT.AM2302",
+    "gpio_pin": "4",
     "executable_path": "dht22/dht22-to-csv-logger.py",
     "latest_log_interval": "60",
     "history_log_interval": "300",
@@ -49,6 +52,7 @@
     "mq2": {
     "status": "1",
     "sensor_name": "mq2",
+    "mq_channel": "0",
     "executable_path": "mq2/mq2-to-csv-logger.py",
     "latest_log_interval": "10",
     "history_log_interval": "300",
@@ -62,6 +66,8 @@
   "lcd1602": {
     "status": "0",
     "sensor_name": "lcd1602",
+    "i2c_bus": "1",
+    "i2c_address": "0x3f",
     "executable_path": "lcd1602/lcd1602-upload.py",
     "update_interval": "10"
   },
@@ -74,12 +80,17 @@
   "thingspeak": {
     "status": "0",
     "sensor_name": "thingspeak",
+    "api_key": "[your api key]",
     "executable_path": "thingspeak/thingspeak-upload.py",
     "update_interval": "300"
   },
     "sh1106": {
     "status": "1",
     "sensor_name": "sh1106",
+    "i2c_port": "1",
+    "i2c_address": "0x3C",
+    "font_height": "16",
+    "device_height": "64",
     "executable_path": "sh1106/sh1106-upload.py",
     "update_interval": "1"
   }

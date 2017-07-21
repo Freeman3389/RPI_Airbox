@@ -11,21 +11,26 @@ import csv
 import sys
 import syslog
 import json
+import platform
 from luma.oled.device import sh1106
 from luma.core.render import canvas
 from luma.core.virtual import viewport
 from PIL import ImageFont
 
 # Get settings from '../settings.json'
-with open('/opt/RPi_Airbox/settings.json') as json_handle:
+with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
 update_interval = int(configs['sh1106']['update_interval'])
+font_height = int(configs['sh1106']['font_height'])
+device_height = int(configs['sh1106']['device_height'])
+i2c_port = int(configs['sh1106']['i2c_port'])
+i2c_address = int(configs['sh1106']['i2c_address'])
 # initial variables
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 latest_reading_values = []
-device = sh1106(port=1, address=0x3C)
+device = sh1106(port= i2c_port, address=i2c_address)
 
 
 def get_reading_csv(sensor):
@@ -40,32 +45,40 @@ def get_reading_csv(sensor):
     return sensor_reading
 
 def main():
-    while True: 
+    while True:
         # use custom font
         font_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                     'luma.oled/examples/fonts', 'C&C Red Alert [INET].ttf'))
-        font2 = ImageFont.truetype(font_path, 16)
+        font2 = ImageFont.truetype(font_path, font_height)
+        # define display string of each line
+        str_lines = []
+        str_lines.append("Hostname: " + platform.node())
+        str_lines.append(time.strftime("%Y/%m/%d %H:%M:%S"))
+        str_lines.append('eth0: ' +  os.popen('ip addr show ' + 'eth0' + ' | grep "\<inet\>" | awk \'{ print $2 }\' | awk -F "/" \'{ print $1 }\'').read().strip())
+        str_lines.append('wlan0: ' +  os.popen('ip addr show ' + 'wlan0' + ' | grep "\<inet\>" | awk \'{ print $2 }\' | awk -F "/" \'{ print $1 }\'').read().strip())
+        str_lines.append("Temp: " + str(get_reading_csv('temperature')) + " c")
+        str_lines.append("Humi: " + str(get_reading_csv('humidity')) + " %")
+        str_lines.append("Smoke: " + str(get_reading_csv('Smoke')) + " ppm")
+        str_lines.append("CO: " + str(get_reading_csv('CO')) + " ppm")
+        str_lines.append("LPG: " + str(get_reading_csv('GAS-LPG')) + " ppm")
 
-        virtual = viewport(device, width=device.width, height=120)
-    
-        with canvas(virtual) as draw:
-            draw.text((0, 0), time.strftime("%Y/%m/%d %H:%M:%S"), font=font2, fill="white")
-            draw.text((0, 16), "Temp: " + str(get_reading_csv('temperature')) + " c", font=font2, fill="white")
-            draw.text((0, 32), "Humi: " + str(get_reading_csv('humidity')) + " %", font=font2, fill="white")
-            draw.text((0, 48), "Smoke: " + str(get_reading_csv('Smoke')) + " ppm", font=font2, fill="white")
-            draw.text((0, 64), "CO: " + str(get_reading_csv('CO')) + " ppm", font=font2, fill="white")
-            draw.text((0, 80), "LPG: " + str(get_reading_csv('GAS-LPG')) + " ppm", font=font2, fill="white")
-     
+        virtual = viewport(device, width=device.width, height=device_height * len(str_lines))
+
+        for i in range(0, 8):
+            y_pos = 16 * (i + 1)
+            with canvas(virtual) as draw:
+                draw.text((0, y_pos), str_lines[i], font=font2, fill="white")
+
         # update the viewport one position below, causing a refresh,
         # giving a rolling up scroll effect when done repeatedly
-        for y in range(32):
+        for y in range(0, font_height*len(str_lines)-device_height, 1):
             virtual.set_position((0, y))
             time.sleep(0.1)
-        time.sleep(1)   
-        for y in range(32, 0, -1):
+        time.sleep(1)
+        # giving a rolling down scroll effect when done repeatedly
+        for y in range(font_height*len(str_lines)-device_height, 0, -1):
             virtual.set_position((0, y))
             time.sleep(0.1)
-            
         time.sleep(update_interval)
 
 if __name__ == "__main__":

@@ -17,11 +17,12 @@ import json
 
 
 # Get settings from 'settings.json'
-with open('/opt/RPi_Airbox/settings.json') as json_handle:
+with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
 update_interval = int(configs['thingspeak']['update_interval'])
+api_key = configs['thingspeak']['api-key']
 # Initial variables
 sensors = ['temperature', 'humidity', 'pm1-at', 'pm25-at', 'pm10-at']  # Define all the sensor readings uploading to Thingspeak
 latest_reading_values = []
@@ -56,7 +57,7 @@ while True:
     params_public = urllib.urlencode(
         {'field1': latest_reading_values[0], 'field2': latest_reading_values[1],
          'field3': latest_reading_values[2], 'field4': latest_reading_values[3],
-         'field5': latest_reading_values[4], 'key': 'MCLBKVWDVXY6IH9F'})
+         'field5': latest_reading_values[4], 'key': api_key})
     headers = {"Content-type": "application/x-www-form-urlencoded",
                "Accept": "text/plain"}
     try:

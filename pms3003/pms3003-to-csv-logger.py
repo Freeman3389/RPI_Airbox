@@ -19,7 +19,7 @@ from datetime import datetime, date
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
-with open('/opt/RPi_Airbox/settings.json') as json_handle:
+with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 sensor_location = configs['global']['sensor_location']
 sensor_readings_list = configs['pms3003']['sensor_readings_list']
@@ -32,7 +32,7 @@ latest_value_datetime = None
 debug = 0  # class g3sensor debug mode
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 # Serial Port device name
-serial_device = "/dev/ttyS0"
+serial_device = configs['pms3003']['serial_device']
 
 # work for pms3003
 # data structure: https://github.com/avaldebe/AQmon/blob/master/Documents/PMS3003_LOGOELE.pdf
@@ -211,7 +211,6 @@ if __name__ == '__main__':
             syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
             latest_reading_value = []
             time.sleep(10)
-            pass
         except (KeyboardInterrupt, SystemExit):
             scheduler.shutdown()
             latest_reading_value = []
@@ -219,4 +218,4 @@ if __name__ == '__main__':
             history_file_path = None
             sys.exit(0)
         finally:
-            pmsdata = [0, 0, 0, 0, 0, 0]
+            pmdata = 0

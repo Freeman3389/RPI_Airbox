@@ -18,12 +18,13 @@ import time
 import logging
 import syslog
 import json
+import pdb
 from datetime import datetime
 # install dependency with 'sudo easy_install apscheduler' NOT with 'sudo pip install apscheduler'
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
-with open('/opt/RPi_Airbox/settings.json') as json_handle:
+with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 sensor_location = configs['global']['sensor_location']
 sensor_readings_list = configs['dht22']['sensor_readings_list']
@@ -31,13 +32,12 @@ data_path = configs['global']['base_path'] + configs['global']['csv_path']
 latest_log_interval = int(configs['dht22']['latest_log_interval'])
 history_log_interval = int(configs['dht22']['history_log_interval'])
 csv_entry_format = configs['dht22']['csv_entry_format']
+sensor = configs['dht22']['sensor_model']
+pin = configs['dht22']['gpio_pin']
 # Initial variables
 latest_reading_value = []
 latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
-# DHT22 specific parameters
-sensor = Adafruit_DHT.AM2302
-pin = 4
 
 
 def get_sensor_readings(sensor, pin):

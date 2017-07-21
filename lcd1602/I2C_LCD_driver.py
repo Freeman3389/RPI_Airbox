@@ -12,17 +12,22 @@ Made available under GNU GENERAL PUBLIC LICENSE
 # added bits and pieces from various sources
 # By DenisFromHR (Denis Pleic)
 # 2015-02-10, ver 0.1
+# re-written by Freeman Lee
+# 2017-07-21, ver 0.2
 
 """
 
-# i2c bus (0 -- original Pi, 1 -- Rev 2 Pi)
-I2CBUS = 1
 
-# LCD Address
-ADDRESS = 0x3f
 
-import smbus
+import smbus, json
 from time import sleep
+with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
+    configs = json.load(json_handle)
+# i2c bus (0 -- original Pi, 1 -- Rev 2 Pi)
+I2CBUS = configs['lcd1602']['i2c_bus']
+# LCD Address
+ADDRESS = configs['lcd1602']['i2c_address']
+
 
 class i2c_device:
    def __init__(self, addr, port=I2CBUS):
