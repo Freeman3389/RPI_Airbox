@@ -14,7 +14,7 @@ import urllib
 import csv
 import syslog
 import json
-
+import os
 
 # Get settings from 'settings.json'
 with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
