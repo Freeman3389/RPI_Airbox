@@ -26,7 +26,7 @@ with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_hand
 # i2c bus (0 -- original Pi, 1 -- Rev 2 Pi)
 I2CBUS = int(configs['lcd1602']['i2c_bus'])
 # LCD Address
-ADDRESS = int(configs['lcd1602']['i2c_address'])
+ADDRESS = int(configs['lcd1602']['i2c_address'], 16)
 
 
 class i2c_device:
