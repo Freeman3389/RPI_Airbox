@@ -19,7 +19,7 @@ Made available under GNU GENERAL PUBLIC LICENSE
 
 
 
-import smbus, json
+import smbus, json, os
 from time import sleep
 with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
