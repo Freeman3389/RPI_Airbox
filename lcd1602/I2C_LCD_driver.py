@@ -24,9 +24,9 @@ from time import sleep
 with open(os.path.abspath(__file__ + '/../..' ) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
 # i2c bus (0 -- original Pi, 1 -- Rev 2 Pi)
-I2CBUS = configs['lcd1602']['i2c_bus']
+I2CBUS = int(configs['lcd1602']['i2c_bus'])
 # LCD Address
-ADDRESS = configs['lcd1602']['i2c_address']
+ADDRESS = int(configs['lcd1602']['i2c_address'])
 
 
 class i2c_device:
