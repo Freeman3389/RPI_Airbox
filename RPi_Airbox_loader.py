@@ -59,16 +59,17 @@ def main():
         for model in configs.keys():
             if model != 'global':
                 enabled_attrs = get_enabled_attrs(configs, model)
-            if enabled_attrs is None:
-                w += 1
-                global message_disabled.append(model)
-            elif not all(enabled_attrs):
-                x += 1
-                global message_noattr.append(model)
-            else:
-                cmd_path = str(configs['global']['base_path']) + str(configs[model]['executable_path'])
-                cmd_str = str('/usr/bin/python ' + cmd_path + ' &')
-                check_process_running(cmd_path, cmd_str, model)
+                
+                if enabled_attrs is None:
+                    w += 1
+                    message_disabled.append(model)
+                elif not all(enabled_attrs):
+                    x += 1
+                    message_noattr.append(model)
+                else:
+                    cmd_path = str(configs['global']['base_path']) + str(configs[model]['executable_path'])
+                    cmd_str = str('/usr/bin/python ' + cmd_path + ' &')
+                    check_process_running(cmd_path, cmd_str, model)
         message_str = 'Loader summary: Loading - ' + str(z) + ' ; Running - ' + str(y) + ' ; Disabled - ' + str(w) + ' ; No Attr - ' + str(x) + '\nLoading Model - ' + (','.join(message_load)) + '\nRunning Model - ' + (','.join(message_running)) + '\nDisabled Model - ' + (','.join(message_disabled)) + '\nNo Attribute Model - ' + (','.join(message_noattr))
         syslog.syslog(syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str)
         print syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str

@@ -3,7 +3,7 @@
     "sensor_location": "QTMC-ServerRoom",
     "account": "rpisensor",
     "base_path": "/opt/RPi_Airbox/",
-    "csv_path": "monitor_web/sensor-values/"
+    "csv_path": "monitor_web/sensor_values/"
   },
   "neo6m": {
     "status": "0",
