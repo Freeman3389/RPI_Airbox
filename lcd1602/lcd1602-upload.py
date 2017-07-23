@@ -45,8 +45,8 @@ def main():
                 time.sleep(1)
             mylcd.lcd_clear()
             # Display PMx values on LCD
-            mylcd.lcd_display_string("PM2.5: " + str(get_reading_csv('pm25-at') + "ug/m3"), 1, 0)
-            mylcd.lcd_display_string("PM 10: " + str(get_reading_csv('pm10-at') + "ug/m3"), 2, 0)
+            mylcd.lcd_display_string("PM2.5: " + str(get_reading_csv('pm25-at') + " ug/m3"), 1, 0)
+            mylcd.lcd_display_string("PM10 : " + str(get_reading_csv('pm10-at') + " ug/m3"), 2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()
             # Display GPS Latitude and Longitude on LCD
