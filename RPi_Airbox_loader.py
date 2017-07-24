@@ -29,7 +29,7 @@ def check_proc_running(module, pid_file):
         if psutil.pid_exists(pid):
             message_running.append(module + '(PID=' + str(pid) + ')')
             y += 1
-        pdb.set_trace()
+            pdb.set_trace()
         else:
             subprocess.call(cmd_str, shell=True)
             message_load.append(module)
