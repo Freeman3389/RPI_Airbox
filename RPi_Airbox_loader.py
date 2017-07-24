@@ -16,14 +16,20 @@ def check_proc_running(module, pid_file):
     global configs
     global y
     global z
+    global message_running
+    global message_load
+    message_load = []
+    message_running = []
     cmd_path = str(configs['global']['base_path']) + str(configs[module]['executable_path'])
     cmd_str = str('/usr/bin/python ' + cmd_path + ' &')
     if os.path.isfile(pid_file):
         with open(pid_file) as f_pid:
             pid = int(f_pid.read().replace('\n', ''))
+        pdb.set_trace()
         if psutil.pid_exists(pid):
             message_running.append(module + '(PID=' + str(pid) + ')')
             y += 1
+        pdb.set_trace()
         else:
             subprocess.call(cmd_str, shell=True)
             message_load.append(module)
@@ -38,10 +44,11 @@ def main():
     syslog.openlog(sys.argv[0], syslog.LOG_PID)
     enabled_module_list = []
     disabled_module_list = []
-    message_enabled = []
-    message_disabled = []
-    message_running = []
-    message_load = []
+    global configs
+    global message_running
+    global message_load
+    global y
+    global z
     w = 0
     x = 0
     y = 0
@@ -68,4 +75,4 @@ if __name__ == "__main__":
     start_time = time.time()
     main()
     print os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time)  + ' Secs'
-    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time) + 'secs')
+    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time) + 'Secs')
