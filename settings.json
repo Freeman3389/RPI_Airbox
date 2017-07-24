@@ -1,6 +1,6 @@
 {
   "global": {
-    "sensor_location": "QTMC-ServerRoom",
+    "sensor_location": "Testing-Place",
     "account": "rpisensor",
     "base_path": "/opt/RPi_Airbox/",
     "csv_path": "monitor_web/sensor_values/"
