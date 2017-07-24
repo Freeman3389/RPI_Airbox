@@ -18,8 +18,10 @@ import time
 import logging
 import syslog
 import json
-import pdb
+import atexit
+# import pdb
 from datetime import datetime
+from array import *
 # install dependency with 'sudo easy_install apscheduler' NOT with 'sudo pip install apscheduler'
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -40,27 +42,27 @@ latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 
 
+def get_sensor_readings(sensor, pin):
+    """Pass parameters of DHT22 sensor and GPIO #, get Reading vaules."""
+    dht22_readings = Adafruit_DHT.read_retry(sensor, pin)
+    if all(dht22_readings):
+        return (map(lambda x: float('%0.2f' % x), dht22_readings))
+    else:
+        syslog.syslog(syslog.LOG_WARNING, "CANNOT get correct readings from DHT22 sensor!")
+
+def get_readings_parameters(reading, type):
+    """Pass kind of reading and type to get return parameters."""
+    if type == 'history_file_path':
+        return data_path + reading + "_" + sensor_location + "_log_" + datetime.today().strftime('%Y') + ".csv"
+    elif type == 'latest_file_path':
+        return data_path + reading + "_" + sensor_location + "_latest_value.csv"
+    elif type == 'csv_header_reading':
+        return "timestamp," + reading + "\n"
+    else:
+        return None
+
+
 def main():
-    def get_sensor_readings(sensor, pin):
-        """Pass parameters of DHT22 sensor and GPIO #, get Reading vaules."""
-        dht22_readings = Adafruit_DHT.read_retry(sensor, pin)
-        if all(dht22_readings):
-            return (map(lambda x: float('%0.2f' % x), dht22_readings))
-        else:
-            syslog.syslog(syslog.LOG_WARNING, "CANNOT get correct readings from DHT22 sensor!")
-
-
-    def get_readings_parameters(reading, type):
-        """Pass kind of reading and type to get return parameters."""
-        if type == 'history_file_path':
-            return data_path + reading + "_" + sensor_location + "_log_" + datetime.today().strftime('%Y') + ".csv"
-        elif type == 'latest_file_path':
-            return data_path + reading + "_" + sensor_location + "_latest_value.csv"
-        elif type == 'csv_header_reading':
-            return "timestamp," + reading + "\n"
-        else:
-            return None
-
 
     def write_value(file_handle, datetime, value):
         """Pass contents and datetime to write into target file."""
@@ -112,11 +114,25 @@ def main():
     syslog.syslog(syslog.LOG_INFO, 'Started interval timer which will be called the first time in {0} seconds.'.format(history_log_interval))
 
     try:
+        def all_done():
+            """Define atexit function"""
+            pid = str(pid_file)
+            os.remove(pid)
+
+        def write_pidfile():
+            """Setup PID file"""
+            pid = str(os.getpid())
+            f_pid = open(pid_file, 'w')
+            f_pid.write(pid)
+            f_pid.close()
+
         while True:
             latest_reading_value = get_sensor_readings(sensor, pin)
             latest_value_datetime = datetime.today()
             write_latest_value()
             time.sleep(latest_log_interval)
+            write_pidfile()
+
     except IOError as ioer:
         syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
         latest_reading_value = []
