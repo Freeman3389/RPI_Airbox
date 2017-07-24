@@ -1,5 +1,5 @@
 """This script will execute all the python script enabled of RPi_Airbox."""
-# !/usr/bin/python -u
+# !/usr/bin/python
 # -*- coding:Utf-8 -*-
 # License: GPL 2.0
 # Copyright 2017-2018 - Freeman Lee <freeman.lee@quantatw.com>
@@ -7,7 +7,9 @@
 
 # Get settings from '../settings.json'
 import sys, json, syslog, os, time, subprocess, psutil, pdb
-
+global configs
+with open('settings.json') as json_handle:
+    configs = json.load(json_handle)
 
 def check_proc_running(module, pid_file):
     """check if enabled module running"""
@@ -33,9 +35,6 @@ def check_proc_running(module, pid_file):
 
 
 def main():
-    global configs
-    with open('settings.json') as json_handle:
-        configs = json.load(json_handle)
     syslog.openlog(sys.argv[0], syslog.LOG_PID)
     enabled_module_list = []
     disabled_module_list = []
@@ -68,5 +67,5 @@ def main():
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    print os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time)
-    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time)) + 'secs'
+    print os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time)  + ' Secs'
+    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time) + 'secs')
