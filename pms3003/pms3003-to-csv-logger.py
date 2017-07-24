@@ -14,8 +14,10 @@ import sys
 import logging
 import syslog
 import json
+import atexit
 from struct import *
 from datetime import datetime, date
+from array import *
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
@@ -27,6 +29,7 @@ data_path = configs['global']['base_path'] + configs['global']['csv_path']
 latest_log_interval = int(configs['pms3003']['latest_log_interval'])
 history_log_interval = int(configs['pms3003']['history_log_interval'])
 csv_entry_format = configs['pms3003']['csv_entry_format']
+pid_file = str(configs['global']['base_path']) + str(configs['neo6m']['sensor_name']) + '.pid'
 # Initial variables
 latest_value_datetime = None
 debug = 0  # class g3sensor debug mode
@@ -142,6 +145,7 @@ class g3sensor():
 
 
 def get_readings_parameters(reading, type):
+    """Pass kind of reading and type to get return parameters."""
     if type == 'history_file_path':
         return data_path + reading + "_" + sensor_location + "_log_" + datetime.today().strftime('%Y') + ".csv"
     elif type == 'latest_file_path':
@@ -198,6 +202,22 @@ if __name__ == '__main__':
     for index, reading in enumerate(sensor_readings_list, start=0):
         f_history_values.append(open_file_write_header(get_readings_parameters(
             reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+    
+    
+    def all_done():
+        """Define atexit function"""
+        pid = str(pid_file)
+        os.remove(pid)
+
+
+    def write_pidfile():
+        """Setup PID file"""
+        pid = str(os.getpid())
+        f_pid = open(pid_file, 'w')
+        f_pid.write(pid)
+        f_pid.close()
+
+    atexit.register(all_done)
     while True:
         pmdata = 0
         try:
@@ -206,12 +226,13 @@ if __name__ == '__main__':
                 latest_reading_value = pmdata
                 latest_value_datetime = datetime.today()
                 write_latest_value()
+            write_pidfile()
             time.sleep(latest_log_interval)
         except IOError as ioer:
             syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
             latest_reading_value = []
             time.sleep(10)
-        except (KeyboardInterrupt, SystemExit):
+        except (KeyboardInterrupt):
             scheduler.shutdown()
             latest_reading_value = []
             latest_file_path = None

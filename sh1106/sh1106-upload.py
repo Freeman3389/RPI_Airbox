@@ -47,8 +47,21 @@ def get_reading_csv(sensor):
             sensor_reading = row[1]  # get second value
     return sensor_reading
 
-def main():
 
+try:
+    def all_done():
+        """Define atexit function"""
+        pid = str(pid_file)
+        os.remove(pid)
+
+    def write_pidfile():
+        """Setup PID file"""
+        pid = str(os.getpid())
+        f_pid = open(pid_file, 'w')
+        f_pid.write(pid)
+        f_pid.close()
+
+    atexit.register(all_done)
     while True:
         # use custom font
         font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fonts', 'C&C Red Alert [INET].ttf'))
@@ -82,23 +95,9 @@ def main():
         for y in range(font_height*len(str_lines)-device_height, 0, -1):
             virtual.set_position((0, y))
             time.sleep(0.1)
+        write_pidfile()
         time.sleep(update_interval)
 
-if __name__ == "__main__":
-    try:
-        def all_done():
-            """Define atexit function"""
-            pid = str(pid_file)
-            os.remove(pid)
+except KeyboardInterrupt:
+    sys.exit(0)
 
-        def write_pidfile():
-            """Setup PID file"""
-            pid = str(os.getpid())
-            f_pid = open(pid_file, 'w')
-            f_pid.write(pid)
-            f_pid.close()
-        atexit.register(all_done)
-        main()
-        write_pidfile()
-    except KeyboardInterrupt:
-        sys.exit(0)

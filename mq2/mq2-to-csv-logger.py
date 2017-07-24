@@ -47,94 +47,88 @@ def get_readings_parameters(reading, type):
         return None
 
 
-def main():
-
-    def write_value(file_handle, datetime, value):
-        """Pass contents and datetime to write into target file."""
-        #pdb.set_trace()
-        line = csv_entry_format.format(datetime, value)
-        file_handle.write(line)
-        file_handle.flush()
+def write_value(file_handle, datetime, value):
+    """Pass contents and datetime to write into target file."""
+    #pdb.set_trace()
+    line = csv_entry_format.format(datetime, value)
+    file_handle.write(line)
+    file_handle.flush()
 
 
-    def open_file_write_header(file_path, mode, csv_header):
-        """Check if the target file is new, and write header."""
-        f_csv = open(file_path, mode, os.O_NONBLOCK)
-        if os.path.getsize(file_path) <= 0:
-            f_csv.write(csv_header)
-        return f_csv
+def open_file_write_header(file_path, mode, csv_header):
+    """Check if the target file is new, and write header."""
+    f_csv = open(file_path, mode, os.O_NONBLOCK)
+    if os.path.getsize(file_path) <= 0:
+        f_csv.write(csv_header)
+    return f_csv
 
 
-    def write_hist_value_callback():
-        """For apscheduler to append latest value into history csv file."""
-        for f, v in zip(f_history_values, latest_reading_value):
-            write_value(f, latest_value_datetime, v)
+def write_hist_value_callback():
+    """For apscheduler to append latest value into history csv file."""
+    for f, v in zip(f_history_values, latest_reading_value):
+        write_value(f, latest_value_datetime, v)
 
 
-    def write_latest_value():
-        """For while loop in main() to write latest value into latest csv file."""
-        i = 0
-        for reading in sensor_readings_list:
-            with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
-                write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
-            i += 1
-        i = 0
+def write_latest_value():
+    """For while loop in main() to write latest value into latest csv file."""
+    i = 0
+    for reading in sensor_readings_list:
+        with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
+            write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
+        i += 1
+    i = 0
 
 
-    f_history_values = []
-    for index, reading in enumerate(sensor_readings_list, start=0):
-        f_history_values.append(open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+f_history_values = []
+for index, reading in enumerate(sensor_readings_list, start=0):
+    f_history_values.append(open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
 
 
-    syslog.syslog(syslog.LOG_INFO, "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi...")
-    # create timer that is called every n seconds, without accumulating delays as when using sleep
-    logging.basicConfig()
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(write_hist_value_callback, 'interval',
+syslog.syslog(syslog.LOG_INFO, "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi...")
+# create timer that is called every n seconds, without accumulating delays as when using sleep
+logging.basicConfig()
+scheduler = BackgroundScheduler()
+scheduler.add_job(write_hist_value_callback, 'interval',
                   seconds=history_log_interval)
-    scheduler.start()
-    syslog.syslog(syslog.LOG_INFO, 'Started interval timer which will be called the first time in {0} seconds.'.format(history_log_interval))
+scheduler.start()
+syslog.syslog(syslog.LOG_INFO, 'Started interval timer which will be called the first time in {0} seconds.'.format(history_log_interval))
 
 
-    try:
-        syslog.syslog(syslog.LOG_INFO, "Get MQ2 Sensor Readings.")
+try:
+    syslog.syslog(syslog.LOG_INFO, "Get MQ2 Sensor Readings.")
 
-        def all_done():
-            """Define atexit function"""
-            pid = str(pid_file)
-            os.remove(pid)
-
-
-        def write_pidfile():
-            """Setup PID file"""
-            pid = str(os.getpid())
-            f_pid = open(pid_file, 'w')
-            f_pid.write(pid)
-            f_pid.close()
+    def all_done():
+        """Define atexit function"""
+        pid = str(pid_file)
+        os.remove(pid)
 
 
-        atexit.register(all_done)
-        mq = MQ()
-        while True:
-            latest_reading_value = list(mq.MQPercentage().values())
-            #pdb.set_trace()
-            time.sleep(latest_log_interval)
-            latest_value_datetime = datetime.today()
-            write_latest_value()
-            write_pidfile()
+    def write_pidfile():
+        """Setup PID file"""
+        pid = str(os.getpid())
+        f_pid = open(pid_file, 'w')
+        f_pid.write(pid)
+        f_pid.close()
 
-    except IOError as ioer:
-        syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
-        latest_reading_value = []
-        time.sleep(10)
 
-    except (KeyboardInterrupt):
-        scheduler.shutdown()
-        latest_reading_value = []
-        latest_file_path = None
-        history_file_path = None
-        sys.exit(0)
+    atexit.register(all_done)
+    mq = MQ()
+    while True:
+        latest_reading_value = list(mq.MQPercentage().values())
+        #pdb.set_trace()
+        time.sleep(latest_log_interval)
+        latest_value_datetime = datetime.today()
+        write_latest_value()
+        write_pidfile()
 
-if __name__ == "__main__":
-    main()
+except IOError as ioer:
+    syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
+    latest_reading_value = []
+    time.sleep(10)
 
+except (KeyboardInterrupt):
+    scheduler.shutdown()
+    latest_reading_value = []
+    latest_file_path = None
+    history_file_path = None
+    sys.exit(0)

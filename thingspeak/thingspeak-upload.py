@@ -43,56 +43,52 @@ def get_reading_csv(sensor):
             sensor_reading = row[1]  # get second value
     return sensor_reading
 
+def all_done():
+    """Define atexit function"""
+    pid = str(pid_file)
+    os.remove(pid)
 
-def main():
-    while True:
-        try:
-            latest_reading_values = []
-            syslog.syslog(syslog.LOG_INFO,
-                          "Begin to upload Sensor values onto Thingspeak.")
-            for sensor in sensors:
-                latest_reading_values.append(get_reading_csv(sensor))
-        except IOError as ioer:
-            syslog.syslog(syslog.LOG_WARNING, ioer +
-                          " , wait 10 seconds to restart.")
-            time.sleep(10)
-            continue
+def write_pidfile():
+    """Setup PID file"""
+    pid = str(os.getpid())
+    f_pid = open(pid_file, 'w')
+    f_pid.write(pid)
+    f_pid.close()
 
-        # thingspeak
-        params_public = urllib.urlencode(
-            {'field1': latest_reading_values[0], 'field2': latest_reading_values[1],
-             'field3': latest_reading_values[2], 'field4': latest_reading_values[3],
-             'field5': latest_reading_values[4], 'key': api_key})
-        headers = {"Content-type": "application/x-www-form-urlencoded",
-                   "Accept": "text/plain"}
-        try:
-            conn = httplib.HTTPConnection("api.thingspeak.com:80")
-            conn.request("POST", "/update", params_public, headers)
-            res = conn.getresponse()
-            syslog.syslog(syslog.LOG_INFO, 'Thingspeak HTTP Response: ' + str(res.status) + ' ' + res.reason)
-            data = res.read()
-        finally:
-            conn.close()
-            params_public = {}
-            latest_reading_values = []
-            time.sleep(update_interval)
-
-if __name__ == "__main__":
+atexit.register(all_done)
+while True:
     try:
-        def all_done():
-            """Define atexit function"""
-            pid = str(pid_file)
-            os.remove(pid)
+        latest_reading_values = []
+        syslog.syslog(syslog.LOG_INFO,
+                      "Begin to upload Sensor values onto Thingspeak.")
+        for sensor in sensors:
+            latest_reading_values.append(get_reading_csv(sensor))
+    except IOError as ioer:
+        syslog.syslog(syslog.LOG_WARNING, ioer +
+                      " , wait 10 seconds to restart.")
+        time.sleep(10)
+        continue
 
-        def write_pidfile():
-            """Setup PID file"""
-            pid = str(os.getpid())
-            f_pid = open(pid_file, 'w')
-            f_pid.write(pid)
-            f_pid.close()
-
-        atexit.register(all_done)
-        main()
+    # thingspeak
+    params_public = urllib.urlencode(
+        {'field1': latest_reading_values[0], 'field2': latest_reading_values[1],
+         'field3': latest_reading_values[2], 'field4': latest_reading_values[3],
+         'field5': latest_reading_values[4], 'key': api_key})
+    headers = {"Content-type": "application/x-www-form-urlencoded",
+               "Accept": "text/plain"}
+    try:
+        conn = httplib.HTTPConnection("api.thingspeak.com:80")
+        conn.request("POST", "/update", params_public, headers)
+        res = conn.getresponse()
+        syslog.syslog(syslog.LOG_INFO, 'Thingspeak HTTP Response: ' + str(res.status) + ' ' + res.reason)
+        data = res.read()
         write_pidfile()
+
     except KeyboardInterrupt:
         sys.exit(0)
+
+    finally:
+        conn.close()
+        params_public = {}
+        latest_reading_values = []
+        time.sleep(update_interval)

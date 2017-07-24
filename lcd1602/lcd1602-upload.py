@@ -36,39 +36,7 @@ def get_reading_csv(sensor):
     return sensor_reading
 
 
-def main():
-    while True:
-        try:
-            # Display date, time, temperature, humidity on LCD
-            idx = 0
-            for idx in range(9):
-                mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
-                mylcd.lcd_display_string("T:" + str(get_reading_csv('temperature')) + "c", 2, 0)
-                mylcd.lcd_display_string("H:" + str(get_reading_csv('humidity')) + "%", 2, 9)
-                time.sleep(1)
-            mylcd.lcd_clear()
-            # Display PMx values on LCD
-            mylcd.lcd_display_string("PM2.5: " + str(get_reading_csv('pm25-at') + " ug/m3"), 1, 0)
-            mylcd.lcd_display_string("PM10 : " + str(get_reading_csv('pm10-at') + " ug/m3"), 2, 0)
-            time.sleep(update_interval)
-            mylcd.lcd_clear()
-            # Display GPS Latitude and Longitude on LCD
-            mylcd.lcd_display_string("Lat: N " + str(get_reading_csv('latitude')), 1, 0)
-            mylcd.lcd_display_string("Lon: E " + str(get_reading_csv('longitude')), 2, 0)
-            time.sleep(update_interval)
-            mylcd.lcd_clear()      
-
-        except IOError as e:
-            mylcd.lcd_clear()
-            syslog.syslog(syslog.LOG_WARNING, "I/O error({0}): {1}".format(e.errno, e.strerror))
-            mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
-            mylcd.lcd_display_string("CANNOT Get data.", 2, 0)
-            sys.exit(0)
-        continue
-
-
-if __name__ == "__main__":
-    
+while True:
     try:
         def all_done():
             """Define atexit function"""
@@ -82,7 +50,32 @@ if __name__ == "__main__":
             f_pid.write(pid)
             f_pid.close()
         atexit.register(all_done)
-        main()
+        # Display date, time, temperature, humidity on LCD
+        idx = 0
+        for idx in range(9):
+            mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
+            mylcd.lcd_display_string("T:" + str(get_reading_csv('temperature')) + "c", 2, 0)
+            mylcd.lcd_display_string("H:" + str(get_reading_csv('humidity')) + "%", 2, 9)
+            time.sleep(1)
+        mylcd.lcd_clear()
+        # Display PMx values on LCD
+        mylcd.lcd_display_string("PM2.5: " + str(get_reading_csv('pm25-at') + " ug/m3"), 1, 0)
+        mylcd.lcd_display_string("PM10 : " + str(get_reading_csv('pm10-at') + " ug/m3"), 2, 0)
+        time.sleep(update_interval)
+        mylcd.lcd_clear()
+        # Display GPS Latitude and Longitude on LCD
+        mylcd.lcd_display_string("Lat: N " + str(get_reading_csv('latitude')), 1, 0)
+        mylcd.lcd_display_string("Lon: E " + str(get_reading_csv('longitude')), 2, 0)
+        time.sleep(update_interval)
+        mylcd.lcd_clear()
         write_pidfile()
+
+    except IOError as e:
+        mylcd.lcd_clear()
+        syslog.syslog(syslog.LOG_WARNING, "I/O error({0}): {1}".format(e.errno, e.strerror))
+        mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
+        mylcd.lcd_display_string("CANNOT Get data.", 2, 0)
+        sys.exit(0)
+
     except KeyboardInterrupt:
         sys.exit(0)

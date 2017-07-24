@@ -70,51 +70,51 @@ def get_readings_parameters(reading, type):
         return None
 
 
-def main():
-
-    def write_value(file_handle, datetime, value):
-        """Pass contents and datetime to write into target file."""
-        line = csv_entry_format.format(datetime, value)
-        file_handle.write(line)
-        file_handle.flush()
+def write_value(file_handle, datetime, value):
+    """Pass contents and datetime to write into target file."""
+    line = csv_entry_format.format(datetime, value)
+    file_handle.write(line)
+    file_handle.flush()
 
 
-    def open_file_write_header(file_path, mode, csv_header):
-        """Check if the target file is new, and write header."""
-        f_csv = open(file_path, mode, os.O_NONBLOCK)
-        if os.path.getsize(file_path) <= 0:
-            f_csv.write(csv_header)
-        return f_csv
+def open_file_write_header(file_path, mode, csv_header):
+    """Check if the target file is new, and write header."""
+    f_csv = open(file_path, mode, os.O_NONBLOCK)
+    if os.path.getsize(file_path) <= 0:
+        f_csv.write(csv_header)
+    return f_csv
 
 
-
-    def write_hist_value_callback():
-        """For apscheduler to append latest value into history csv file."""
-        for f, v in zip(f_history_values, latest_reading_value):
-            write_value(f, latest_value_datetime, v)
-
-
-    def write_latest_value():
-        """For while loop in main() to write latest value into latest csv file."""
-        i = 0
-        for reading in sensor_readings_list:
-            with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
-                write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
-            i += 1
-        i = 0
+def write_hist_value_callback():
+    """For apscheduler to append latest value into history csv file."""
+    for f, v in zip(f_history_values, latest_reading_value):
+        write_value(f, latest_value_datetime, v)
 
 
-    gpsp = GpsPoller()  # create the thread
-    syslog.syslog(syslog.LOG_INFO, "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi...")
-    # create timer that is called every n seconds, without accumulating delays as when using sleep
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(write_hist_value_callback, 'interval', seconds=history_log_interval)
-    scheduler.start()
-    syslog.syslog(syslog.LOG_INFO, "Started interval timer which will be called the first time in {0} seconds.".format(history_log_interval))
-    f_history_values = []
-    for index, reading in enumerate(sensor_readings_list, start=0):
-        f_history_values.append(open_file_write_header(get_readings_parameters(
-            reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+def write_latest_value():
+    """For while loop in main() to write latest value into latest csv file."""
+    i = 0
+    for reading in sensor_readings_list:
+        with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
+            write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
+        i += 1
+    i = 0
+
+
+gpsp = GpsPoller()  # create the thread
+syslog.syslog(syslog.LOG_INFO, "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi...")
+# create timer that is called every n seconds, without accumulating delays as when using sleep
+scheduler = BackgroundScheduler()
+scheduler.add_job(write_hist_value_callback, 'interval', seconds=history_log_interval)
+scheduler.start()
+syslog.syslog(syslog.LOG_INFO, "Started interval timer which will be called the first time in {0} seconds.".format(history_log_interval))
+
+f_history_values = []
+for index, reading in enumerate(sensor_readings_list, start=0):
+    f_history_values.append(open_file_write_header(get_readings_parameters(
+        reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+
+if __name__ == '__main__':
     try:
         def all_done():
             """Define atexit function"""
@@ -147,11 +147,12 @@ def main():
             write_pidfile()
             time.sleep(latest_log_interval)  # set to whatever
 
-    except (KeyboardInterrupt, SystemExit):  # when you press ctrl+c
+    except (KeyboardInterrupt):  # when you press ctrl+c
         print "\nKilling Thread..."
         gpsp.running = False
         gpsp.join()  # wait for the thread to finish what it's doing
         scheduler.shutdown()
+        sys.exit(0)
     except IOError as ioer:
         syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
         time.sleep(10)
@@ -159,6 +160,3 @@ def main():
         latest_reading_value = []
         latest_file_path = None
         history_file_path = None
-
-if __name__ == '__main__':
-    main()
