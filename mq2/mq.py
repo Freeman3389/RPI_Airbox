@@ -6,6 +6,7 @@ import math
 import syslog
 import sys
 import json
+import os
 from MCP3008 import MCP3008
 
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
