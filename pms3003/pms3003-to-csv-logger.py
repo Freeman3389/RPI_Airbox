@@ -1,4 +1,4 @@
-"""This script will get DHT22 sensor readings, and write to csv files."""
+"""This script will get PlantPower PMS3003 (G3) sensor readings, and write to csv files."""
 # !/bin/python
 # -*- coding: utf-8 -*-
 # Originally written by Thomas Tsai
@@ -29,6 +29,7 @@ data_path = configs['global']['base_path'] + configs['global']['csv_path']
 latest_log_interval = int(configs['pms3003']['latest_log_interval'])
 history_log_interval = int(configs['pms3003']['history_log_interval'])
 csv_entry_format = configs['pms3003']['csv_entry_format']
+pid_file = str(configs['global']['base_path']) + str(configs['pms3003']['sensor_name']) + '.pid'
 # Initial variables
 latest_value_datetime = None
 debug = 0  # class g3sensor debug mode
@@ -220,8 +221,7 @@ if __name__ == '__main__':
     while True:
         pmdata = 0
         try:
-            pmdata = air.read(serial_device)
-            pid_file = str(configs['global']['base_path']) + str(configs['neo6m']['sensor_name']) + '.pid'
+            pmdata = air.read(serial_device)       
             if pmdata != 0:
                 latest_reading_value = pmdata
                 latest_value_datetime = datetime.today()
