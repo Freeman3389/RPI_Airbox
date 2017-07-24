@@ -35,6 +35,7 @@ latest_log_interval = int(configs['dht22']['latest_log_interval'])
 history_log_interval = int(configs['dht22']['history_log_interval'])
 csv_entry_format = configs['dht22']['csv_entry_format']
 pin = int(configs['dht22']['gpio_pin'])
+pid_file = str(configs['global']['base_path']) + str(configs['mq2']['sensor_name']) + '.pid'
 # Initial variables
 sensor = Adafruit_DHT.AM2302
 latest_reading_value = []
