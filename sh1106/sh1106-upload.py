@@ -12,10 +12,12 @@ import sys
 import syslog
 import json
 import platform
+import atexit
 from luma.oled.device import sh1106
 from luma.core.render import canvas
 from luma.core.virtual import viewport
 from PIL import ImageFont
+from array import *
 
 # Get settings from '../settings.json'
 with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
@@ -27,6 +29,7 @@ font_height = int(configs['sh1106']['font_height'])
 device_height = int(configs['sh1106']['device_height'])
 i2c_port = int(configs['sh1106']['i2c_port'])
 i2c_address = int(configs['sh1106']['i2c_address'], 16)
+pid_file = str(configs['global']['base_path']) + str(configs['sh1106']['sensor_name']) + '.pid'
 # initial variables
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 latest_reading_values = []
@@ -45,10 +48,10 @@ def get_reading_csv(sensor):
     return sensor_reading
 
 def main():
+
     while True:
         # use custom font
-        font_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                    'fonts', 'C&C Red Alert [INET].ttf'))
+        font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fonts', 'C&C Red Alert [INET].ttf'))
         font2 = ImageFont.truetype(font_path, font_height)
         # define display string of each line
         str_lines = []
@@ -83,6 +86,19 @@ def main():
 
 if __name__ == "__main__":
     try:
+        def all_done():
+            """Define atexit function"""
+            pid = str(pid_file)
+            os.remove(pid)
+
+        def write_pidfile():
+            """Setup PID file"""
+            pid = str(os.getpid())
+            f_pid = open(pid_file, 'w')
+            f_pid.write(pid)
+            f_pid.close()
+        atexit.register(all_done)
         main()
+        write_pidfile()
     except KeyboardInterrupt:
-        pass
+        sys.exit(0)

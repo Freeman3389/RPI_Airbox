@@ -11,8 +11,10 @@ syslog.openlog(sys.argv[0], syslog.LOG_PID)
 with open('settings.json') as json_handle:
     configs = json.load(json_handle)
 account = configs['global']['account']
+enabled_module_list = []
+disabled_module_list = []
+message_enabled = []
 message_disabled = []
-message_noattr = []
 message_running = []
 message_load = []
 w = 0
@@ -21,56 +23,40 @@ y = 0
 z = 0
 
 
-def index_containing_substring(the_list, substring):
-    """Get index number of list where subtring contained."""
-    for i, s in enumerate(the_list):
-        if substring in s:
-            return i
-    return -1
-
-def get_enabled_attrs(dictionary, sensor):
-    """Get specific attribute if the sensor is enabled."""
-    if dictionary.get(sensor).get('status') == '1':
-        return (dictionary.get(sensor).get('sensor_name', None), dictionary.get(sensor).get('executable_path', None))
+def check_proc_running(module, pid_file):
+    """check if enabled module running"""
+    cmd_path = str(configs['global']['base_path']) + str(configs[module]['executable_path'])
+    cmd_str = str('/usr/bin/python ' + cmd_path + ' &')
+    if os.path.isfile(pid_file):
+        with open(pid_file) as f_pid:
+            pid = int(f_pid.read().replace('\n', ''))
+        if psutil.pid_exists(pid):
+            message_running.append(module + '(PID=' + str(pid) + ')')
+            y += 1
+        else:
+            subprocess.call(cmd_str, shell=True)
+            message_load.append(module)
+            z += 1
     else:
-        return None
-
-def check_process_running(cmd_path, cmd_str, model):
-    """Check if specific python script is running"""
-    running_process_str = []
-    for pid in psutil.pids():
-        p = psutil.Process(pid)
-        if len(p.cmdline()) > 1 and 'python' in p.cmdline():
-            index = index_containing_substring(p.cmdline(), 'python')
-            for proc_str in p.cmdline()[index + 1:len(p.cmdline())]:
-                running_process_str.append(proc_str)
-    if cmd_path in running_process_str:
-        y += 1
-        message_running.append(model)
-    else:
-        z += 1
-        message_load.append(model)
         subprocess.call(cmd_str, shell=True)
-    time.sleep(0.1)
+        message_load.append(module)
+        z += 1
+
 
 def main():
     try:
         syslog.syslog(syslog.LOG_INFO, 'Begin to check RPi_Airbox enabled scripts.')
-        for model in configs.keys():
-            if model != 'global':
-                enabled_attrs = get_enabled_attrs(configs, model)
-                
-                if enabled_attrs is None:
+        for module in configs.keys():
+            if module != 'global':
+                if configs.get(module).get('status') == 1:
+                    pid_file = str(configs['global']['base_path']) + str(configs[module]['sensor_name']) + '.pid'
                     w += 1
-                    message_disabled.append(model)
-                elif not all(enabled_attrs):
-                    x += 1
-                    message_noattr.append(model)
+                    enabled_module_list.append(module)
+                    check_proc_running(module, pid_file)
                 else:
-                    cmd_path = str(configs['global']['base_path']) + str(configs[model]['executable_path'])
-                    cmd_str = str('/usr/bin/python ' + cmd_path + ' &')
-                    check_process_running(cmd_path, cmd_str, model)
-        message_str = 'Loader summary: Loading - ' + str(z) + ' ; Running - ' + str(y) + ' ; Disabled - ' + str(w) + ' ; No Attr - ' + str(x) + '\nLoading Model - ' + (','.join(message_load)) + '\nRunning Model - ' + (','.join(message_running)) + '\nDisabled Model - ' + (','.join(message_disabled)) + '\nNo Attribute Model - ' + (','.join(message_noattr))
+                    x += 1
+                    disabled_module_list.append(module)
+        message_str = 'Loader summary: Enabled - ' + str(w) + ' ; Disabled - ' + str(x) + ' ; Running - ' + str(y) + ' ; Loading - ' + str(z) + '\nEnabled Modules - ' + (','.join(enabled_module_list)) + '\nDisabled Modules - ' + (','.join(disabled_module_list)) + '\nRunning Modules - ' + (','.join(message_running)) + '\nLoading Modules - ' + (','.join(message_load))
         syslog.syslog(syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str)
         print syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str
     except BaseException:

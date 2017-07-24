@@ -7,7 +7,9 @@
 # License: GPL 2.0
 
 import I2C_LCD_driver
+import atexit
 import time, csv, sys, os, syslog, json
+from array import *
 
 # Get settings from '../settings.json'
 with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
@@ -15,6 +17,7 @@ with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handl
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
 update_interval = int(configs['lcd1602']['update_interval'])
+pid_file = str(configs['global']['base_path']) + str(configs['lcd1602']['sensor_name']) + '.pid'
 # initial variables
 mylcd = I2C_LCD_driver.lcd()
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
@@ -54,15 +57,32 @@ def main():
             mylcd.lcd_display_string("Lon: E " + str(get_reading_csv('longitude')), 2, 0)
             time.sleep(update_interval)
             mylcd.lcd_clear()      
-        except (KeyboardInterrupt, SystemExit):
-            mylcd.lcd_clear()
-            print "User canceled, screen clear!!"
+
         except IOError as e:
             mylcd.lcd_clear()
             syslog.syslog(syslog.LOG_WARNING, "I/O error({0}): {1}".format(e.errno, e.strerror))
             mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
             mylcd.lcd_display_string("CANNOT Get data.", 2, 0)
+            sys.exit(0)
         continue
 
+
 if __name__ == "__main__":
-    main()
+    
+    try:
+        def all_done():
+            """Define atexit function"""
+            pid = str(pid_file)
+            os.remove(pid)
+
+        def write_pidfile():
+            """Setup PID file"""
+            pid = str(os.getpid())
+            f_pid = open(pid_file, 'w')
+            f_pid.write(pid)
+            f_pid.close()
+        atexit.register(all_done)
+        main()
+        write_pidfile()
+    except KeyboardInterrupt:
+        sys.exit(0)
