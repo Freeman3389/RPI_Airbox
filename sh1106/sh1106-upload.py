@@ -26,7 +26,7 @@ update_interval = int(configs['sh1106']['update_interval'])
 font_height = int(configs['sh1106']['font_height'])
 device_height = int(configs['sh1106']['device_height'])
 i2c_port = int(configs['sh1106']['i2c_port'])
-i2c_address = int(configs['sh1106']['i2c_address'])
+i2c_address = int(configs['sh1106']['i2c_address'], 16)
 # initial variables
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 latest_reading_values = []
