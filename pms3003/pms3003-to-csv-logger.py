@@ -29,7 +29,6 @@ data_path = configs['global']['base_path'] + configs['global']['csv_path']
 latest_log_interval = int(configs['pms3003']['latest_log_interval'])
 history_log_interval = int(configs['pms3003']['history_log_interval'])
 csv_entry_format = configs['pms3003']['csv_entry_format']
-pid_file = str(configs['global']['base_path']) + str(configs['neo6m']['sensor_name']) + '.pid'
 # Initial variables
 latest_value_datetime = None
 debug = 0  # class g3sensor debug mode
@@ -202,8 +201,8 @@ if __name__ == '__main__':
     for index, reading in enumerate(sensor_readings_list, start=0):
         f_history_values.append(open_file_write_header(get_readings_parameters(
             reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
-    
-    
+
+
     def all_done():
         """Define atexit function"""
         pid = str(pid_file)
@@ -222,6 +221,7 @@ if __name__ == '__main__':
         pmdata = 0
         try:
             pmdata = air.read(serial_device)
+            pid_file = str(configs['global']['base_path']) + str(configs['neo6m']['sensor_name']) + '.pid'
             if pmdata != 0:
                 latest_reading_value = pmdata
                 latest_value_datetime = datetime.today()
