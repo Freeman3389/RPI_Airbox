@@ -6,7 +6,7 @@
 # Version 0.1.0 @ 2017.07.19
 
 # Get settings from '../settings.json'
-import sys, json, syslog, os, time, subprocess, psutil
+import sys, json, syslog, os, time, subprocess, psutil, pdb
 global configs
 with open('settings.json') as json_handle:
     configs = json.load(json_handle)
@@ -25,6 +25,7 @@ def check_proc_running(module, pid_file):
     if os.path.isfile(pid_file):
         with open(pid_file) as f_pid:
             pid = int(f_pid.read().replace('\n', ''))
+        pdb.set_trace()
         if psutil.pid_exists(pid):
             message_running.append(module + '(PID=' + str(pid) + ')')
             y += 1
@@ -39,24 +40,26 @@ def check_proc_running(module, pid_file):
 
 
 def main():
-    syslog.openlog(sys.argv[0], syslog.LOG_PID)
-    enabled_module_list = []
-    disabled_module_list = []
-    global configs
-    global message_running
-    global message_load
-    message_running = []
-    message_load = []
-    global y
-    global z
-    w = 0
-    x = 0
-    y = 0
-    z = 0
+
     retry_timestamp = int(time.time())
     retry_counter = MAX_RETRY
 
     while retry_counter > 0:
+        syslog.openlog(sys.argv[0], syslog.LOG_PID)
+        enabled_module_list = []
+        disabled_module_list = []
+        global configs
+        global message_running
+        global message_load
+        message_running = []
+        message_load = []
+        global y
+        global z
+        w = 0
+        x = 0
+        y = 0
+        z = 0
+
         try:
             syslog.syslog(syslog.LOG_INFO, 'Begin to check RPi_Airbox enabled scripts.')
             for module in configs.keys():
@@ -65,16 +68,23 @@ def main():
                     w += 1
                     enabled_module_list.append(module)
                     check_proc_running(module, pid_file)
-                    print 'w, y, z = ', w, y, z
+                    time.sleep(5)
                 else:
                     x += 1
                     disabled_module_list.append(module)
+                    time.sleep(5)
             message_str = 'Loader summary: Enabled - ' + str(w) + ' ; Disabled - ' + str(x) + ' ; Running - ' + str(y) + ' ; Loading - ' + str(z) + '\nEnabled Modules - ' + (', '.join(enabled_module_list)) + '\nDisabled Modules - ' + (', '.join(disabled_module_list)) + '\nRunning Modules - ' + (', '.join(message_running)) + '\nLoading Modules - ' + (', '.join(message_load))
             syslog.syslog(syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str)
             print syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str
+            time.sleep(1)
+
         except IOError, ioer:
             syslog.syslog(syslog.LOG_WARNING, "Loader thread was died: IOError: %s" % (ioer))
+            time.sleep(60)
             pass
+
+        finally:
+            
 
         # Errors frequency detection
         now = int(time.time())
