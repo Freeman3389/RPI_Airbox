@@ -41,10 +41,7 @@ def check_proc_running(module, pid_file):
 
 def main():
 
-    retry_timestamp = int(time.time())
-    retry_counter = MAX_RETRY
-
-    while retry_counter > 0:
+    while True:
         syslog.openlog(sys.argv[0], syslog.LOG_PID)
         enabled_module_list = []
         disabled_module_list = []
@@ -83,16 +80,8 @@ def main():
             time.sleep(60)
             pass
 
-        finally:
-            
-
-        # Errors frequency detection
-        now = int(time.time())
-        if (now - 3600) > retry_timestamp: 	# If the previous error is older than 1H
-            retry_counter = MAX_RETRY
         else:
-            retry_counter -= 1
-        retry_timestamp = now
+            break
 
 if __name__ == "__main__":
     start_time = time.time()
