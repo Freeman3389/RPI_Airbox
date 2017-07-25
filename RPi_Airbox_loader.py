@@ -7,20 +7,21 @@
 
 # Get settings from '../settings.json'
 import sys, json, syslog, os, time, subprocess, psutil
-global configs
 with open('settings.json') as json_handle:
     configs = json.load(json_handle)
+syslog.openlog(sys.argv[0], syslog.LOG_PID)
+enabled_module_list = []
+disabled_module_list = []
+message_running = []
+message_load = []
+w = 0
+x = 0
+y = 0
+z = 0
 
 def check_proc_running(module, pid_file):
     """check if enabled module running"""
-    global configs
-    global y
-    global z
-    global message_running
-    global message_load
-    message_load = []
-    message_running = []
-    cmd_account = str(configs['global']['account']) 
+    cmd_account = str(configs['global']['account'])
     cmd_path = str(configs['global']['base_path']) + str(configs[module]['executable_path'])
     cmd_str = str('/usr/bin/sudo -u ' + cmd_account + ' /usr/bin/python ' + cmd_path + ' &')
     if os.path.isfile(pid_file):
@@ -40,18 +41,7 @@ def check_proc_running(module, pid_file):
 
 
 def main():
-    syslog.openlog(sys.argv[0], syslog.LOG_PID)
-    enabled_module_list = []
-    disabled_module_list = []
-    global configs
-    global message_running
-    global message_load
-    global y
-    global z
-    w = 0
-    x = 0
-    y = 0
-    z = 0
+    
 
     try:
         syslog.syslog(syslog.LOG_INFO, 'Begin to check RPi_Airbox enabled scripts.')
@@ -61,6 +51,7 @@ def main():
                 w += 1
                 enabled_module_list.append(module)
                 check_proc_running(module, pid_file)
+                print 'w, y, z = ', w, y, z
             else:
                 x += 1
                 disabled_module_list.append(module)
@@ -73,5 +64,5 @@ def main():
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    print os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time)  + ' Secs'
-    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + 'execution time = ' + str(time.time() - start_time) + 'Secs')
+    print os.path.basename(__file__) + 'execution time = ' + '{:10.4f}'.format(time.time() - start_time)  + ' Secs'
+    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + 'execution time = ' + '{:10.4f}'.format(time.time() - start_time) + 'Secs')
