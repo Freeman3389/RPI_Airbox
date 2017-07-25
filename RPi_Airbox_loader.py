@@ -25,7 +25,6 @@ def check_proc_running(module, pid_file):
     if os.path.isfile(pid_file):
         with open(pid_file) as f_pid:
             pid = int(f_pid.read().replace('\n', ''))
-        pdb.set_trace()
         if psutil.pid_exists(pid):
             message_running.append(module + '(PID=' + str(pid) + ')')
             y += 1
