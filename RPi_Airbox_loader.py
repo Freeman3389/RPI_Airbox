@@ -86,5 +86,5 @@ def main():
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    print os.path.basename(__file__) + 'execution time = ' + '{:10.4f}'.format(time.time() - start_time)  + ' Secs'
-    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + 'execution time = ' + '{:10.4f}'.format(time.time() - start_time) + 'Secs')
+    print os.path.basename(__file__) + ' execution time = ' + '{:10.4f}'.format(time.time() - start_time)  + ' Secs'
+    syslog.syslog(syslog.LOG_INFO, os.path.basename(__file__) + ' execution time = ' + '{:10.4f}'.format(time.time() - start_time) + 'Secs')
