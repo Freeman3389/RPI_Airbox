@@ -6,7 +6,7 @@
 # Version 0.1.0 @ 2017.07.19
 
 # Get settings from '../settings.json'
-import sys, json, syslog, os, time, subprocess, psutil, pdb
+import sys, json, syslog, os, time, subprocess, psutil
 global configs
 with open('settings.json') as json_handle:
     configs = json.load(json_handle)
@@ -20,16 +20,15 @@ def check_proc_running(module, pid_file):
     global message_load
     message_load = []
     message_running = []
+    cmd_account = str(configs['global']['account']) 
     cmd_path = str(configs['global']['base_path']) + str(configs[module]['executable_path'])
-    cmd_str = str('/usr/bin/python ' + cmd_path + ' &')
+    cmd_str = str('/usr/bin/sudo -u ' + cmd_account + ' /usr/bin/python ' + cmd_path + ' &')
     if os.path.isfile(pid_file):
         with open(pid_file) as f_pid:
             pid = int(f_pid.read().replace('\n', ''))
-        pdb.set_trace()
         if psutil.pid_exists(pid):
             message_running.append(module + '(PID=' + str(pid) + ')')
             y += 1
-            pdb.set_trace()
         else:
             subprocess.call(cmd_str, shell=True)
             message_load.append(module)
