@@ -33,7 +33,7 @@ pid_file = str(configs['global']['base_path']) + str(configs['sh1106']['sensor_n
 # initial variables
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 latest_reading_values = []
-device = sh1106(port= i2c_port, address=i2c_address)
+device = sh1106(port=i2c_port, address=i2c_address)
 
 
 def get_reading_csv(sensor):
@@ -62,30 +62,30 @@ try:
         f_pid.close()
 
     atexit.register(all_done)
+
     while True:
         # use custom font
         font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fonts', 'C&C Red Alert [INET].ttf'))
         font2 = ImageFont.truetype(font_path, font_height)
         # define display string of each line
         str_lines = []
-        str_lines.append("Hostname: " + platform.node())
-        str_lines.append(time.strftime("%Y/%m/%d %H:%M:%S"))
+        str_lines.append('Hostname: ' + platform.node())
+        str_lines.append(time.strftime('%Y/%m/%d %H:%M:%S'))
         str_lines.append('eth0: ' +  os.popen('ip addr show ' + 'eth0' + ' | grep "\<inet\>" | awk \'{ print $2 }\' | awk -F "/" \'{ print $1 }\'').read().strip())
         str_lines.append('wlan0: ' +  os.popen('ip addr show ' + 'wlan0' + ' | grep "\<inet\>" | awk \'{ print $2 }\' | awk -F "/" \'{ print $1 }\'').read().strip())
-        str_lines.append("Temp: " + str(get_reading_csv('temperature')) + " c")
-        str_lines.append("Humi: " + str(get_reading_csv('humidity')) + " %")
-        str_lines.append("Smoke: " + str(get_reading_csv('Smoke')) + " ppm")
-        str_lines.append("CO: " + str(get_reading_csv('CO')) + " ppm")
-        str_lines.append("LPG: " + str(get_reading_csv('GAS-LPG')) + " ppm")
+        str_lines.append('Temp: ' + str(get_reading_csv('temperature')) + ' c')
+        str_lines.append('Humi: ' + str(get_reading_csv('humidity')) + ' %')
+        str_lines.append('Smoke: ' + str(get_reading_csv('Smoke')) + ' ppm')
+        str_lines.append('CO: ' + str(get_reading_csv('CO')) + ' ppm')
+        str_lines.append('LPG: ' + str(get_reading_csv('GAS-LPG')) + ' ppm')
 
-        virtual = viewport(device, width=device.width, height=device_height * len(str_lines))
+        virtual = viewport(device, width=device.width, height=font_height * len(str_lines))
 
-        for i in range(0, 8):
-            y_pos = 16 * (i + 1)
-            with canvas(virtual) as draw:
+        with canvas(virtual) as draw:
+            for i in range(0, len(str_lines)-1, 1):
+                y_pos = font_height * i
                 draw.text((0, y_pos), str_lines[i], font=font2, fill="white")
 
-        # update the viewport one position below, causing a refresh,
         # giving a rolling up scroll effect when done repeatedly
         for y in range(0, font_height*len(str_lines)-device_height, 1):
             virtual.set_position((0, y))
@@ -95,13 +95,13 @@ try:
         for y in range(font_height*len(str_lines)-device_height, 0, -1):
             virtual.set_position((0, y))
             time.sleep(0.1)
-        write_pidfile()
         time.sleep(update_interval)
 
+        write_pidfile()
+
 except IOError, ioer:
-    syslog.syslog(syslog.LOG_WARNING, "Loader thread was died: IOError: %s" % (ioer))
+    syslog.syslog(syslog.LOG_WARNING, "Main thread was died: IOError: %s" % (ioer))
     pass
 
 except KeyboardInterrupt:
     sys.exit(0)
-
