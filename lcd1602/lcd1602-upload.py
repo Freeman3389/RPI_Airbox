@@ -75,7 +75,7 @@ while True:
         syslog.syslog(syslog.LOG_WARNING, "I/O error({0}): {1}".format(e.errno, e.strerror))
         mylcd.lcd_display_string(time.strftime("%m/%d %H:%M:%S"), 1, 1)
         mylcd.lcd_display_string("CANNOT Get data.", 2, 0)
-        sys.exit(0)
+        pass
 
     except KeyboardInterrupt:
         sys.exit(0)

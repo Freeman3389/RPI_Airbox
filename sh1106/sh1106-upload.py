@@ -98,6 +98,10 @@ try:
         write_pidfile()
         time.sleep(update_interval)
 
+except IOError, ioer:
+    syslog.syslog(syslog.LOG_WARNING, "Loader thread was died: IOError: %s" % (ioer))
+    pass
+
 except KeyboardInterrupt:
     sys.exit(0)
 

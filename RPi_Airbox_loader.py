@@ -10,6 +10,7 @@ import sys, json, syslog, os, time, subprocess, psutil
 global configs
 with open('settings.json') as json_handle:
     configs = json.load(json_handle)
+MAX_RETRY = 10
 
 def check_proc_running(module, pid_file):
     """check if enabled module running"""
@@ -18,8 +19,6 @@ def check_proc_running(module, pid_file):
     global z
     global message_running
     global message_load
-    message_load = []
-    message_running = []
     cmd_account = str(configs['global']['account'])
     cmd_path = str(configs['global']['base_path']) + str(configs[module]['executable_path'])
     cmd_str = str('/usr/bin/sudo -u ' + cmd_account + ' /usr/bin/python ' + cmd_path + ' &')
@@ -46,30 +45,44 @@ def main():
     global configs
     global message_running
     global message_load
+    message_running = []
+    message_load = []
     global y
     global z
     w = 0
     x = 0
     y = 0
     z = 0
+    retry_timestamp = int(time.time())
+    retry_counter = MAX_RETRY
 
-    try:
-        syslog.syslog(syslog.LOG_INFO, 'Begin to check RPi_Airbox enabled scripts.')
-        for module in configs.keys():
-            if module != 'global' and int(configs.get(module).get('status')) == 1:
-                pid_file = str(configs['global']['base_path']) + str(configs[module]['sensor_name']) + '.pid'
-                w += 1
-                enabled_module_list.append(module)
-                check_proc_running(module, pid_file)
-                print 'w, y, z = ', w, y, z
-            else:
-                x += 1
-                disabled_module_list.append(module)
-        message_str = 'Loader summary: Enabled - ' + str(w) + ' ; Disabled - ' + str(x) + ' ; Running - ' + str(y) + ' ; Loading - ' + str(z) + '\nEnabled Modules - ' + (','.join(enabled_module_list)) + '\nDisabled Modules - ' + (','.join(disabled_module_list)) + '\nRunning Modules - ' + (','.join(message_running)) + '\nLoading Modules - ' + (','.join(message_load))
-        syslog.syslog(syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str)
-        print syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str
-    except BaseException:
-        pass
+    while retry_counter > 0:
+        try:
+            syslog.syslog(syslog.LOG_INFO, 'Begin to check RPi_Airbox enabled scripts.')
+            for module in configs.keys():
+                if module != 'global' and int(configs.get(module).get('status')) == 1:
+                    pid_file = str(configs['global']['base_path']) + str(configs[module]['sensor_name']) + '.pid'
+                    w += 1
+                    enabled_module_list.append(module)
+                    check_proc_running(module, pid_file)
+                    print 'w, y, z = ', w, y, z
+                else:
+                    x += 1
+                    disabled_module_list.append(module)
+            message_str = 'Loader summary: Enabled - ' + str(w) + ' ; Disabled - ' + str(x) + ' ; Running - ' + str(y) + ' ; Loading - ' + str(z) + '\nEnabled Modules - ' + (', '.join(enabled_module_list)) + '\nDisabled Modules - ' + (', '.join(disabled_module_list)) + '\nRunning Modules - ' + (', '.join(message_running)) + '\nLoading Modules - ' + (', '.join(message_load))
+            syslog.syslog(syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str)
+            print syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str
+        except IOError, ioer:
+            syslog.syslog(syslog.LOG_WARNING, "Loader thread was died: IOError: %s" % (ioer))
+            pass
+
+        # Errors frequency detection
+        now = int(time.time())
+        if (now - 3600) > retry_timestamp: 	# If the previous error is older than 1H
+            retry_counter = MAX_RETRY
+        else:
+            retry_counter -= 1
+        retry_timestamp = now
 
 if __name__ == "__main__":
     start_time = time.time()

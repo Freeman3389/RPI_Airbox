@@ -67,7 +67,7 @@ while True:
         syslog.syslog(syslog.LOG_WARNING, ioer +
                       " , wait 10 seconds to restart.")
         time.sleep(10)
-        continue
+        pass
 
     # thingspeak
     params_public = urllib.urlencode(
