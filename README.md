@@ -1,4 +1,6 @@
-# 1. Initialization your Raspberry Pi (a.k.a RPi)
+#How To Use This
+
+## 1. Initialization your Raspberry Pi (a.k.a RPi)
 
 **i) Download Raspbian Jessie from official site**
 (https://www.raspberrypi.org/downloads/raspbian/)
@@ -73,7 +75,7 @@ to activate UART port of Raspberry Pi 3.**
   $ sudo ntpdate -s [your NTP server]
   ```
 
-# 2. Set up DHT22 temperature and humidity sensor
+## 2. Set up DHT22 temperature and humidity sensor
 Before this part, you have to connect DHT22 sensor to your RPi correctly, 
 and know what GPIO Pin that you connect to DHT22 data pin.
 
@@ -90,7 +92,7 @@ and know what GPIO Pin that you connect to DHT22 data pin.
 
 **iii) Modify settings.json. The *"gpio_pin"* should base on your wiring and make sure *"status"* of *"dht22"* is *"1"*.**
 
-# 3. Set up MQ2 smoke sensor
+## 3. Set up MQ2 smoke sensor
 Before this part, you have to connect MQ2 sensor to your RPi correctly, and know which ADC channel that you connect to MQ2 Analog pin.
 (https://tutorials-raspberrypi.com/configure-and-read-out-the-raspberry-pi-gas-sensor-mq-x/)
 
@@ -122,7 +124,7 @@ Before this part, you have to connect MQ2 sensor to your RPi correctly, and know
   $ sudo rm -rf /opt/RPi_Airbox/monitor_web/sensor_values/*.csv
   ```
 
-# 4. Set up SH1106 OLED screen
+## 4. Set up SH1106 OLED screen
 Before this part, you have to connect SH1106 screen to your RPi correctly.
 (https://luma-oled.readthedocs.io/en/latest/)
 Because sh1106-upload.py will get the sensor values from the latest csv files from other sensors, it should not work before those csv files presented.
@@ -145,7 +147,7 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
   - "device_height" => "64" (By default, but you still have to check your specs)
   - "status" => "1"
 
-# 5. Set up snmp-passpersist
+## 5. Set up snmp-passpersist
 Because sh1106-upload.py will get the sensor values from the latest csv files from other sensors, it should not work before those csv files presented.
 
 **i) Install necessary module**
@@ -181,7 +183,7 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
   $ tail -f /var/log/syslog | grep snmp
   ```
  
-# 6. Set up automatical execution programs after reboot.
+## 6. Set up automatical execution programs after reboot.
 
 **i) Make sure the owner of "/opt/RPi_Airbox" is rpisensor**
   ```
@@ -226,5 +228,6 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
   30 * * * * /usr/bin/sudo /usr/bin/python /opt/RPi_Airbox/RPi_Airbox_loader.py >/dev/null 2>&1
   0 * * * * /usr/bin/sudo ntpdate -s 10.243.20.11 >/dev/null 2>&1
   ```
-Done!
+
+## Done!
 	
