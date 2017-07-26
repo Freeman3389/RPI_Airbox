@@ -126,7 +126,16 @@ Before this part, you have to connect MQ2 sensor to your RPi correctly, and know
   $ sudo rm -rf /opt/RPi_Airbox/monitor_web/sensor_values/*.csv
   ```
 
-## 4. Set up SH1106 OLED screen
+## 4. Set up PlantPower PMS3003 PMx sensor
+Not ready yet.
+
+## 5. Set up ublox Neo6m GPS receiver
+Not ready yet.
+
+## 6. Set up LCD1602 (I2C) screen
+Not ready yet.
+
+## 7. Set up SH1106 OLED screen
 Before this part, you have to connect SH1106 screen to your RPi correctly.
 (https://luma-oled.readthedocs.io/en/latest/)
 Because sh1106-upload.py will get the sensor values from the latest csv files from other sensors, it should not work before those csv files presented.
@@ -151,8 +160,9 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
   - "device_height" => "64" (By default, but you still have to check your specs)
   - "status" => "1"
 
-## 5. Set up snmp-passpersist
+## 8. Set up snmp-passpersist
 Because sh1106-upload.py will get the sensor values from the latest csv files from other sensors, it should not work before those csv files presented.
+**Please DONT set its "status" to "1" in settings.json.**
 
 **i) Install necessary module**
   ```
@@ -169,7 +179,7 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
   rocommiuity [your ro community] [your NMS server] -V all
   ```
 
-**iii) modify *"sensor-readings-list"* array of *"snmp-passpersist"* settings in settings.json according to your sensors. **
+**iii) modify *"sensor-readings-list"* array of *"snmp-passpersist"* settings in settings.json according to your sensors.**
 
 **iv) Add system account - snmp to rpisensor group**
   ```
@@ -186,8 +196,14 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
   $ netstat -ln
   $ tail -f /var/log/syslog | grep snmp
   ```
- 
-## 6. Set up automatical execution programs after reboot.
+
+## 9. Set up Thingspeak upload module
+Not ready yet
+
+## 10. Set up MQTT upload module
+Not ready yet
+
+## 11. Set up automatical execution programs after reboot.
 
 **i) Make sure the owner of "/opt/RPi_Airbox" is rpisensor**
   ```
