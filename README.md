@@ -1,4 +1,4 @@
-#How To Use This
+# How To Use This Project
 
 ## 1. Initialization your Raspberry Pi (a.k.a RPi)
 
