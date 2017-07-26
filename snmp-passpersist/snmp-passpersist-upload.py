@@ -39,8 +39,8 @@ with open('/opt/RPi_Airbox/settings.json') as json_handle:
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
 update_interval = int(configs['snmp-passpersist']['update_interval'])
+sensors = configs['snmp-passpersist']['sensor_readings_list']
 # General stuff
-sensors = ['humidity', 'temperature', 'pm1-cf', 'pm10-cf', 'pm25-cf', 'pm1-at', 'pm10-at', 'pm25-at', 'latitude', 'longitude', 'altitude', 'GAS-LPG', 'CO', 'Smoke']
 MAX_RETRY = 10				# Number of success retry in case of error
 # Global vars
 OID_BASE = ".1.3.6.1.4.1.16813.1"
