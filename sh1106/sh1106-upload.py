@@ -79,10 +79,10 @@ try:
         str_lines.append('CO: ' + str(get_reading_csv('CO')) + ' ppm')
         str_lines.append('LPG: ' + str(get_reading_csv('GAS-LPG')) + ' ppm')
 
-        virtual = viewport(device, width=device.width, height=font_height * len(str_lines))
+        virtual = viewport(device, width=device.width, height=font_height * (len(str_lines) + 1))
 
         with canvas(virtual) as draw:
-            for i in range(0, len(str_lines)-1, 1):
+            for i in range(0, len(str_lines), 1):
                 y_pos = font_height * i
                 draw.text((0, y_pos), str_lines[i], font=font2, fill="white")
 
@@ -95,9 +95,9 @@ try:
         for y in range(font_height*len(str_lines)-device_height, 0, -1):
             virtual.set_position((0, y))
             time.sleep(0.1)
+        write_pidfile()
         time.sleep(update_interval)
 
-        write_pidfile()
 
 except IOError, ioer:
     syslog.syslog(syslog.LOG_WARNING, "Main thread was died: IOError: %s" % (ioer))
