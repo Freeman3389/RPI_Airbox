@@ -7,8 +7,7 @@
 
 # Get settings from '../settings.json'
 import sys, json, syslog, os, time, subprocess, psutil, pdb
-global configs
-with open('settings.json') as json_handle:
+with open(os.path.dirname(os.path.abspath(__file__)) + '\\settings.json') as json_handle:
     configs = json.load(json_handle)
 MAX_RETRY = 10
 
