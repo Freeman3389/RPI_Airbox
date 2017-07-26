@@ -233,7 +233,6 @@ Not ready yet
   ```
   Add these 3 lines below into rc.local before *"exit 0"*
   ```
-	cd /opt/RPi_Airbox
   /usr/bin/sudo /usr/bin/python /opt/RPi_Airbox/RPi_Airbox_loader.py >/dev/null 2>&1
   /usr/bin/sudo ntpdate -s [your NTP server] >/dev/null 2>&1
   ```
