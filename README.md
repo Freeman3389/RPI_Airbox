@@ -60,8 +60,9 @@ to activate UART port of Raspberry Pi 3.**
   ```
   $ sudo nano /opt/RPi_Airbox/settings.json
   ```
-	Check settings of *"global"*, especially *"sensor_location"*
-	Check settings of each model. If you have the specific module in your RPi box, 
+  
+  Check settings of *"global"*, especially *"sensor_location"*
+  Check settings of each model. If you have the specific module in your RPi box, 
   please make sure the *"status"* should be *"1"* to let RPi_Airbox_loader.py to bring it up.
 
 **xiii) Create monitor_web\sensor_values directory to store data**
@@ -87,8 +88,9 @@ and know what GPIO Pin that you connect to DHT22 data pin.
   $ cd Adafruit_Python_DHT
   $ sudo python setup.py install
   ```
-	After this, you can do a simple test by input *"examples/AdafruitDHT.py 2302 [GPIO Pin #]"*.
-	If you can see output like *"Temp=26.3*  Humidity=44.1%"*, your DHT22 should work.
+  
+  After this, you can do a simple test by input *"examples/AdafruitDHT.py 2302 [GPIO Pin #]"*.
+  If you can see output like *"Temp=26.3*  Humidity=44.1%"*, your DHT22 should work.
 
 **iii) Modify settings.json. The *"gpio_pin"* should base on your wiring and make sure *"status"* of *"dht22"* is *"1"*.**
 
@@ -136,7 +138,9 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
   $ sudo apt-get purge python-pip
   $ sudo pip -H install --upgrade luma.oled
   ```
+  
   After installed, input follow command to detect your SH1106 address. The last number in the command is the i2c port number.
+  
   ```
   $ i2cdetect -y 1
   ```
