@@ -97,7 +97,8 @@ After this, you can do a simple test by input *"examples/AdafruitDHT.py 2302 [GP
 If you can see output like *"Temp=26.3*  *Humidity=44.1%"*, your DHT22 should work.
 
 **iii) Check setting.json settings**
-Modify settings.json. The *gpio_pin* should base on your wiring and make sure *status* of *dht22* is *1*.**
+- Modify settings.json. The *gpio_pin* should base on your wiring
+- Make sure *status* of *dht22* is *1*
 
 ## 3. Set up MQ2 smoke sensor (via ADC to GPIO)
 Before this part, you have to connect MQ2 sensor to your RPi correctly, 
@@ -113,7 +114,8 @@ $ sudo -H pip install tzlocal
 ```
 
 **ii) Check setting.json settings**
-*mq_channel* settings of *mq2* in settings.json and make sure *status* of "mq2" is *1*.
+- *mq_channel* settings of *mq2* in settings.json
+- Make sure *status* of "mq2" is *1*.
 
 **iii) Input following command to check if MQ2 is working.**
 ```
