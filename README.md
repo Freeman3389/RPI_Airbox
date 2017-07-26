@@ -13,7 +13,7 @@
 **iv) Mount MicroSD /boot partition in Windows/MAC/Linux and add *"dtoverlay=pi3-disable-bt"* after the last line of *config.txt* 
 to activate UART port of Raspberry Pi 3.**
 
-**v) Connect USB-to-TTL cable to Raspberry. *Black(GND) => Pin 6, White(UART Rx) => Pin 8, Green(UART Tx) => Pin 10* **
+**v) Connect USB-to-TTL cable to Raspberry. *Black(GND) => Pin 6, White(UART Rx) => Pin 8, Green(UART Tx) => Pin 10***
 
 **vi) Login Raspberry Pi by default account (pi/raspberry), then input *"sudo raspi-config"* to do basic setup.**
 - Change User Password => Change password of default account, pi
