@@ -40,7 +40,7 @@ data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
 update_interval = int(configs['snmp-passpersist']['update_interval'])
 # General stuff
-sensors = ['humidity', 'temperature', 'pm1-cf', 'pm10-cf', 'pm25-cf', 'pm1-at', 'pm10-at', 'pm25-at', 'latitude', 'longitude', 'altitude']
+sensors = ['humidity', 'temperature', 'pm1-cf', 'pm10-cf', 'pm25-cf', 'pm1-at', 'pm10-at', 'pm25-at', 'latitude', 'longitude', 'altitude', 'GAS-LPG', 'CO', 'Smoke']
 MAX_RETRY = 10				# Number of success retry in case of error
 # Global vars
 OID_BASE = ".1.3.6.1.4.1.16813.1"
@@ -104,6 +104,9 @@ Map of snmp_rpisensors MIB :
       |  +-- -R-- Gauge     RpiStatsHostSensorLati(10)		(Degree)
       |  +-- -R-- Gauge     RpiStatsHostSensorLong(11)		(Degree)
       |  +-- -R-- Gauge     RpiStatsHostSensorAlti(12)		(Meter)
+      |  +-- -R-- Gauge     RpiStatsHostSensorLPG(13)		(PPM * 10^6)
+      |  +-- -R-- Gauge     RpiStatsHostSensorCO(14)		(PPM * 10^6)
+      |  +-- -R-- Gauge     RpiStatsHostSensorSmoke(15)		(PPM * 10^6)
       |
       +-- -R-- Gauge     RpiStatsHostBootTime(11)
       +-- -R-- Gauge     RpiStatsHostCpuUsage(12)      (Percentage*100: 0-10000)
@@ -124,7 +127,7 @@ def get_reading_csv(sensor):
         for row in csvreader:
             sensor_reading = row[1]  # get second value
     return sensor_reading
-    
+
 
 def update_data():
     """Update snmp's data from psutil and sensor"""
@@ -149,7 +152,7 @@ def update_data():
     pp.add_gau('1.7.1.0', psutil.virtual_memory().used)
     pp.add_gau('1.7.2.0', psutil.virtual_memory().free)
     pp.add_gau('1.7.3.0', psutil.virtual_memory().percent)
-    
+
     # Mount Point's Usage
     for part in partitions:
         oid = pp.encode(part.mountpoint)
@@ -163,14 +166,17 @@ def update_data():
         pp.add_str('1.9.1.' + oid, name)
         pp.add_cnt_32bit('1.9.2.' + oid, nic_counters[name].bytes_sent)
         pp.add_cnt_32bit('1.9.3.' + oid, nic_counters[name].bytes_recv)
-    i= 2
+    i = 2
 
     # Get each kind of readings from sensor latest value csv file
     i = 2
     for sensor in sensors:
-        oid=pp.encode(sensor)
+        oid = pp.encode(sensor)
         pp.add_str('1.10.1.' + oid, sensor)
-        pp.add_str('1.10.'+ str(i) +'.'+ oid,get_reading_csv(sensor))
+        if sensor == 'GAS-LPG' or sensor == 'CO' or sensor == 'Smoke':
+            pp.add_str('1.10.' + str(i) + '.' + oid, str('{0:.6f}'.format(float(get_reading_csv(sensor))*100000)))
+        else:
+            pp.add_str('1.10.' + str(i) + '.' + oid, get_reading_csv(sensor))
         i += 1
     i = 0
 
