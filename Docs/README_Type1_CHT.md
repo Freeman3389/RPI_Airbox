@@ -106,7 +106,7 @@ $ sudo ntpdate -s [your NTP server]
 ```
 
 **xv) 電路佈線圖**
-![電路圖](RPi_Airbox_Type1_DHT22_MQ2_SH1106.fz)
+![電路圖](RPi_Airbox_Type1_DHT22_MQ2_SH1106_bb.png)
 
 ## 2. 設定DHT22溫濕度感測器(GPIO)
 進行此小節前, 必須先將DHT22正確接線到樹莓派, 並確認DHT22資料腳接到樹莓派的那個針腳上. 
