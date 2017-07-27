@@ -1,5 +1,7 @@
 # 樹莓派空氣盒子-DHT22, MQ2, SH1106
 
+![實際照片](https://github.com/Freeman3389/RPi_Airbox/blob/master/Docs/DSC_0693.JPG)
+
 ## 1. 初始化樹莓派(簡稱︰RPi)
 
 **i) 自樹莓派官方網頁下載Raspbian影像檔**
@@ -31,6 +33,8 @@ $ sudo raspi-config
 - Hostname => 修改此台樹莓派的電腦名稱
 - Localisation Options => Change Timezone => 修改時區
 - Interfacing Options => SSH, SPI, I2C, Serial => 皆修改為Enable
+(https://github.com/Freeman3389/RPi_Airbox/blob/master/Docs/Ashampoo_Snap_2017%E5%B9%B47%E6%9C%8826%E6%97%A5_09h47m52s_003_COM6%20-%20PuTTY.png)
+
 完成後輸入以下指令重開機︰
 ```
 $ sudo reboot
@@ -53,6 +57,8 @@ $ sudo nano /etc/sudoers
 ```
 rpisensor       ALL=(ALL) NOPASSWD: /usr/bin/python
 ```
+(https://github.com/Freeman3389/RPi_Airbox/blob/master/Docs/Ashampoo_Snap_2017%E5%B9%B47%E6%9C%8826%E6%97%A5_10h03m24s_007_COM6%20-%20PuTTY.png)
+
 註︰存檔前務必確認無輸入錯誤，此檔案格式錯誤會造成一般使用者無法執行sudo指令，之後要復原會非常麻煩。
 
 **ix) 安裝必要套件**
@@ -165,6 +171,7 @@ $ sudo rm -rf /opt/RPi_Airbox/monitor_web/sensor_values/*.csv
 此專案的設計是由感測器收到資料時，寫到指定的目錄的csv格式檔案中，
 再由資料呈現模組抓取csv檔案中的數值呈現。
 因此在剛設定好時，這些作為資料呈現用的模組可能測試時會出現找不到檔案的錯誤訊息。
+(https://github.com/Freeman3389/RPi_Airbox/blob/master/Docs/Ashampoo_Snap_2017%E5%B9%B47%E6%9C%8826%E6%97%A5_13h07m55s_014_pi-RPi-QRDC-%20-.png)
 
 **i) 安裝必要套件**
 ```
@@ -178,6 +185,7 @@ $ sudo pip -H install --upgrade luma.oled
 ```
 $ i2cdetect -y 1
 ```
+(https://github.com/Freeman3389/RPi_Airbox/blob/master/Docs/Ashampoo_Snap_2017%E5%B9%B47%E6%9C%8826%E6%97%A5_13h46m40s_015_pi-RPi-QRDC-%20-.png)
 
 **ii) 修改settings.json中SH1106的部份**
 - "i2c_port" => "1"                         # 預設值為1
@@ -246,7 +254,7 @@ Running Modules -
 Loading Modules - sh1106, mq2, dht22
 RPi_Airbox_loader.py execution time =    46.0970 Secs
 ```
-
+(https://github.com/Freeman3389/RPi_Airbox/blob/master/Docs/Ashampoo_Snap_2017%E5%B9%B47%E6%9C%8826%E6%97%A5_14h38m08s_016_pi-RPi-QRDC-%20-opt-RPi-Airbox.png)
 **iii) 修改開機啟動設定檔/etc/rc.local**
 ```
 $ sudo nano /etc/rc.local
