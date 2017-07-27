@@ -10,7 +10,7 @@
 
 **iii) Write Raspbian Jessie image to MicroSD by ImageWriter**
 
-**iv) Mount MicroSD /boot partition in Windows/MAC/Linux and add *"dtoverlay=pi3-disable-bt"* after the last line of *config.txt* 
+**iv) Mount MicroSD /boot partition in Windows/MAC/Linux and add *"dtoverlay=pi3-disable-bt"* after the last line of *config.txt*** 
 to activate UART port of Raspberry Pi 3.**
 
 **v) Connect USB-to-TTL cable to Raspberry. *Black(GND) => Pin 6, White(UART Rx) => Pin 8, Green(UART Tx) => Pin 10***
@@ -309,7 +309,7 @@ Add following 2 lines into crontab, and it will execute the RPi_Airbox_loader.py
 also sync time with NTP on the hour.
 ```
 30 * * * * /usr/bin/sudo /usr/bin/python /opt/RPi_Airbox/RPi_Airbox_loader.py >/dev/null 2>&1
-0 * * * * /usr/bin/sudo ntpdate -s 10.243.20.11 >/dev/null 2>&1
+0 * * * * /usr/bin/sudo ntpdate -s [your ntp server] >/dev/null 2>&1
 ```
 
 ## Done!
