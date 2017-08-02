@@ -126,7 +126,7 @@ except IOError as ioer:
     latest_reading_value = []
     time.sleep(10)
 
-except (KeyboardInterrupt):
+except KeyboardInterrupt:
     scheduler.shutdown()
     latest_reading_value = []
     latest_file_path = None

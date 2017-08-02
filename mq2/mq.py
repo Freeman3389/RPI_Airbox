@@ -16,7 +16,7 @@ with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handl
 class MQ():
 
     ######################### Hardware Related Macros #########################
-    MQ_PIN                       = configs['mq2']['mq_channel']        # define which analog input channel you are going to use (MCP3008)
+    MQ_PIN                       = int(configs['mq2']['mq_channel'])        # define which analog input channel you are going to use (MCP3008)
     RL_VALUE                     = 5        # define the load resistance on the board, in kilo ohms
     RO_CLEAN_AIR_FACTOR          = 9.83     # RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
                                             # which is derived from the chart in datasheet

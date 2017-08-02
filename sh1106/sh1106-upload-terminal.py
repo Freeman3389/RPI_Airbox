@@ -13,6 +13,7 @@ import syslog
 import json
 import platform
 import atexit
+from luma.core.interface.serial import i2c
 from luma.oled.device import sh1106
 from luma.core.render import canvas
 from luma.core.virtual import terminal
@@ -34,7 +35,8 @@ pid_file = str(configs['global']['base_path']) + str(configs['sh1106']['sensor_n
 # initial variables
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 latest_reading_values = []
-device = sh1106(port=i2c_port, address=i2c_address)
+serial = i2c(port=i2c_port, address=i2c_address)
+device = sh1106(serial)
 
 
 def get_reading_csv(sensor):
@@ -70,7 +72,7 @@ try:
         font2 = ImageFont.truetype(font_path, font_size)
         # define display string of each line
         str_lines = []
-        str_lines.append('Hostname: ' + platform.node())
+        str_lines.append('Host: ' + platform.node())
         str_lines.append(time.strftime('%Y/%m/%d %H:%M:%S'))
         str_lines.append('eth0: ' +  os.popen('ip addr show ' + 'eth0' + ' | grep "\<inet\>" | awk \'{ print $2 }\' | awk -F "/" \'{ print $1 }\'').read().strip())
         str_lines.append('wlan0: ' +  os.popen('ip addr show ' + 'wlan0' + ' | grep "\<inet\>" | awk \'{ print $2 }\' | awk -F "/" \'{ print $1 }\'').read().strip())
