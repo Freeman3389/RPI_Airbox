@@ -15,7 +15,7 @@ import platform
 import atexit
 from luma.oled.device import sh1106
 from luma.core.render import canvas
-from luma.core.virtual import viewport
+from luma.core.virtual import terminal
 from PIL import ImageFont
 from array import *
 
@@ -25,7 +25,8 @@ with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handl
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
 update_interval = int(configs['sh1106']['update_interval'])
-font_height = int(configs['sh1106']['font_height'])
+font_name = str(configs['sh1106']['font_name'])
+font_size = int(configs['sh1106']['font_size'])
 device_height = int(configs['sh1106']['device_height'])
 i2c_port = int(configs['sh1106']['i2c_port'])
 i2c_address = int(configs['sh1106']['i2c_address'], 16)
@@ -65,8 +66,8 @@ try:
 
     while True:
         # use custom font
-        font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fonts', 'C&C Red Alert [INET].ttf'))
-        font2 = ImageFont.truetype(font_path, font_height)
+        font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fonts', font_name))
+        font2 = ImageFont.truetype(font_path, font_size)
         # define display string of each line
         str_lines = []
         str_lines.append('Hostname: ' + platform.node())
@@ -79,22 +80,13 @@ try:
         str_lines.append('CO: ' + str(get_reading_csv('CO')) + ' ppm')
         str_lines.append('LPG: ' + str(get_reading_csv('GAS-LPG')) + ' ppm')
 
-        virtual = viewport(device, width=device.width, height=font_height * (len(str_lines) + 1))
+        term = terminal(device, font2)
 
-        with canvas(virtual) as draw:
-            for i in range(0, len(str_lines), 1):
-                y_pos = font_height * i
-                draw.text((0, y_pos), str_lines[i], font=font2, fill="white")
-
-        # giving a rolling up scroll effect when done repeatedly
-        for y in range(0, font_height*len(str_lines)-device_height, 1):
-            virtual.set_position((0, y))
-            time.sleep(0.1)
-        time.sleep(1)
-        # giving a rolling down scroll effect when done repeatedly
-        for y in range(font_height*len(str_lines)-device_height, 0, -1):
-            virtual.set_position((0, y))
-            time.sleep(0.1)
+        for i in range(0, len(str_lines), 1):
+            term.println(str_lines[i])
+            time.sleep(update_interval)
+        time.sleep(update_interval)
+        term.clear()
         write_pidfile()
         time.sleep(update_interval)
 
