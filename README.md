@@ -10,25 +10,37 @@
 
 **iii) Write Raspbian Jessie image to MicroSD by ImageWriter**
 
-**iv) Mount MicroSD /boot partition in Windows/MAC/Linux and add *"dtoverlay=pi3-disable-bt"* after the last line of *config.txt*** 
-to activate UART port of Raspberry Pi 3.**
+**iv) Mount MicroSD /boot partition in Windows/MAC/Linux** 
+and add *"dtoverlay=pi3-disable-bt"* after the last line of *config.txt*** 
+to activate UART port of Raspberry Pi 3.
 
-**v) Connect USB-to-TTL cable to Raspberry. *Black(GND) => Pin 6, White(UART Rx) => Pin 8, Green(UART Tx) => Pin 10***
+**v) Connect USB-to-TTL cable to Raspberry.**
+- Black(GND) => Pin 6
+- White(UART Rx) => Pin 8
+- Green(UART Tx) => Pin 10
 
-**vi) Login Raspberry Pi by default account (pi/raspberry), then input *"sudo raspi-config"* to do basic setup.**
+**vi) Login Raspberry Pi by default account (pi/raspberry)**
+```
+$ sudo raspi-config
+```
 - Change User Password => Change password of default account, pi
 - Hostname => Modify as what you want
 - Localisation Options => Change Timezone => To where you live
 - Interfacing Options => SSH, SPI, I2C, Serial should be enabled
 
-**vii) After reboot, input following command to create a system account - rpisensor for execution of RPi_Airbox programs.**
+**vii) Create a system account - rpisensor** 
+input following command to create rpisensor for execution of RPi_Airbox programs.
 ```
 $ sudo useradd -r rpisensor
 $ sudo mkhomedir_helper rpisensor
 $ sudo usermod -aG dialout,gpio,i2c,spi rpisensor
 ```
 
-**viii) input *"sudo nano /etc/sudoers”* to let rpisensor execute python script without any prompt of sudo password.**
+**viii) Modify /etc/sudoers**
+```
+$ sudo nano /etc/sudoers
+```
+Let rpisensor execute python script without any prompt of sudo password.
 ```
 rpisensor       ALL=(ALL) NOPASSWD: /usr/bin/python
 ```
@@ -60,7 +72,6 @@ $ sudo git clone https://github.com/Freeman3389/RPi_Airbox.git
 ```
 $ sudo nano /opt/RPi_Airbox/settings.json
 ```
-
 Check settings of *global*, especially *sensor_location*
 Check settings of each model. 
 If you have the specific module in your RPi box, 
@@ -74,8 +85,14 @@ $ sudo mkdir /opt/RPi_Airbox/monitor_web/sensor_values
 **xiv) Sync time with NTP server (if possible)**
 ```
 $ sudo systemctl stop ntp
-$ sudo ntpdate -s [your NTP server]
+$ sudo ntpdate [your NTP server]
 ```
+
+**xv) Disable Bluetooth module for speeding up UART port**
+```
+sudo systemctl disable hciuart
+```
+
 
 ## 2. Set up DHT22 temperature and humidity sensor (GPIO)
 Before this part, you have to connect DHT22 sensor to your RPi correctly, 
@@ -177,6 +194,10 @@ $ cgps -s
 or
 $ gpsmon
 ```
+If you always see 'NO FIX' in cgps, but gpsmon can get your location, 
+try to fix this issue by the following website.
+(http://wiki.dragino.com/index.php?title=Getting_GPS_to_work_on_Raspberry_Pi_3_Model_B)
+
 **vi) Check setting.json settings**
 Make sure *status* of *neo6m* is *1*.
 
@@ -263,7 +284,10 @@ $ tail -f /var/log/syslog | grep snmp
 - Modify *api_key* settings in settings.json
 
 ## 10. Set up MQTT upload module
-Not ready yet
+**i) install necessary module**
+```
+pip -E install ppaho-mqtt
+```
 
 ## 10. Set up Monitor Web module
 Not ready yet
