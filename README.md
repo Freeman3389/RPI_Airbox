@@ -11,8 +11,12 @@
 **iii) Write Raspbian Jessie image to MicroSD by ImageWriter**
 
 **iv) Mount MicroSD /boot partition in Windows/MAC/Linux** 
-and add *"dtoverlay=pi3-disable-bt"* after the last line of *config.txt*** 
-to activate UART port of Raspberry Pi 3.
+Add following lines after the last line of *config.sts* to activate UART port of Raspberry Pi 3.
+```
+dtoverlay=pi3-disable-bt
+enable_uart=1
+```
+
 
 **v) Connect USB-to-TTL cable to Raspberry.**
 - Black(GND) => Pin 6
@@ -49,8 +53,8 @@ rpisensor       ALL=(ALL) NOPASSWD: /usr/bin/python
 ```
 $ sudo apt-get update
 $ sudo apt-get install -y build-essential python-dev python-pip ntpdate git
-$ sudo -H pip install --upgrade pip
-$ sudo -H pip install psutil
+$ sudo -HE pip install --upgrade pip
+$ sudo -HE pip install psutil
 ```
 
 **x) If you need to access Internet through proxy, please consider to configure following settings.**
@@ -124,10 +128,10 @@ and know which ADC channel that you connect to MQ2 Analog pin.
 
 **i) Make sure necessary python modules had been installed.**
 ```
-$ sudo -H pip install spidev
-$ sudo -H pip install apscheduler
-$ sudo -H pip install setuptools
-$ sudo -H pip install tzlocal
+$ sudo -HE pip install spidev
+$ sudo -HE pip install apscheduler
+$ sudo -HE pip install setuptools
+$ sudo -HE pip install tzlocal
 ```
 
 **ii) Check setting.json settings**
@@ -136,20 +140,12 @@ $ sudo -H pip install tzlocal
 
 **iii) Input following command to check if MQ2 is working.**
 ```
-$ sudo python /opt/RPi_Airbox/mq2/mq2-to-csv-logger.py
+$ sudo python /opt/RPi_Airbox/mq2/example.py
 ```
 Wait 5 minutes if no error message.
-```
-$ cat /opt/RPi_Airbox/monitor_web/sensor_values/CO_QRDC-ServerRo_latest_value.csv
-```
-If you can see the value in second line, your MQ2 is ready to work.
+If you can see the value in console, your MQ2 is ready to work.
 
-**Don't forget to clear those records.**
-```
-$ sudo rm -rf /opt/RPi_Airbox/monitor_web/sensor_values/*.csv
-```
-
-## 4. Set up PlantPower PMS3003 PMx sensor (UART)
+## 4. Set up Plantower PMS3003 PMx sensor (UART)
 **i) Check UART device settings**
 Check possible serial port device name from output of command below.
 ```
@@ -223,9 +219,9 @@ it should not work before those csv files presented.
 **i) Install necessary module**
 ```
 $ sudo apt-get install -y i2c-tools python-smbus libfreetype6-dev libjpeg-dev
-$ sudo pip -H install --upgrade pip
+$ sudo -HE pip install --upgrade pip
 $ sudo apt-get purge python-pip
-$ sudo pip -H install --upgrade luma.oled
+$ sudo -HE pip install --upgrade luma.oled
 ```
 
 After installed, input follow command to detect your SH1106 address. 
@@ -247,7 +243,7 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
 
 **i) Install necessary module**
 ```
-$ sudo pip -H install snmp-passpersist
+$ sudo -HE pip install snmp-passpersist
 $ sudo apt-get install -y snmpd
 ```
 
@@ -258,6 +254,11 @@ However, you have to modify following settings of it according to your network.
 rocommunity public  192.168.1.0/24 -V all
 =>
 rocommiuity [your ro community] [your NMS server] -V all
+```
+Add following line into the last of snmpd.conf
+```
+pass_persist .1.3.6.1.4.1.16813.1 /usr/bin/python -u /opt/RPi_Airbox/snmp-passpersist/snmp-passpersist-upload.py
+
 ```
 
 **iii) modify *"sensor-readings-list"* array of *"snmp-passpersist"* settings in settings.json according to your sensors.**
