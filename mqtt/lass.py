@@ -29,24 +29,24 @@
 #        LassCli ( CliSetting, CliExport, CliData )
 #        MonitorThread:
 #        FakeDataGenerator:
-import random
-import threading
-import datetime
-import time
-import re
-import math
+import argparse
 #cli
 import cmd
-#kml
-import simplekml
-import paho.mqtt.client as mqtt
+import datetime
+import json
+import math
+import random
+import re
+import sys
+import threading
+import time
+
 #plot
 import matplotlib.pyplot as plt
 import numpy as np
-import json
-import argparse
-import sys
-import math
+import paho.mqtt.client as mqtt
+#kml
+import simplekml
 
 data_log_file = None
 data_file = None
@@ -1248,9 +1248,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
