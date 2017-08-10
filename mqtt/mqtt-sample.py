@@ -5,6 +5,7 @@ import threading
 import os
 import json
 import csv
+import collections
 import pdb
 import paho.mqtt.client as mqtt
 from gps import *
@@ -19,21 +20,24 @@ class Setting:
         #self.mqtt_topic="LASS/Test/+"  #REPLACE: to your sensor topic, it do not subscribe device id's channel
         self.mqtt_server = "gpssensor.ddns.net"
         self.mqtt_port = 1883
-        self.mqtt_topic = "LASS/Test/#"  #Default: LASS/Test/+ , REPLACE: to your sensor topic, it do not subscribe device id's channel
+        self.mqtt_topic = "Developer/Test/"  #Default: LASS/Test/+ , REPLACE: to your sensor topic, it do not subscribe device id's channel
         self.device_id = "RPi_Airbox_000000" #Default: YOUR_DEVICE_NAME, REPLACE: to your device id
         self.clientid="RPiAirboxYM_1502271751"
         self.username="e119d4cd-4b84-410f-b598-282ae59c9d2a"
         self.passwd="r:20dae1c1ab24b0f84ea5bfcbfd47e9b2"
         self.ver_format = 3
-        self.fake_gps = 1
+        self.fake_gps = 0
         self.app = "RPi_Airbox"
         self.ver_format = 3 #Default 3,: filter parameter when filter_par_type=2
         self.ver_app = "0.8.3"
         self.device = "RaspberryPi_3"
         self.sensor_types = ['temperature', 'humidity', 'pm25-at', 'pm10-at']
+        self.payload_header = ('ver_format', 'FAKE_GPS', 'app', 'ver_app', 'device_id', 'tick', 'date', 'time', 'device', 's_d0', 's_t0', 's_h0', 's_d1', 'gps_lat', 'gps_lon', 'gps_fix', 'gps_num', 'gps_alt')
         self.fgps_lon = 121.3713162
         self.fgps_lat = 25.055752
         self.fgps_alt = 0.0
+        self.tick = 0
+
 
 class GpsPoller(threading.Thread):
     def __init__(self):
@@ -48,6 +52,7 @@ class GpsPoller(threading.Thread):
         while gpsp.running:
             gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
 
+
 def data_process(str_type):
     """parse the data and form the related variables"""
     #example payload
@@ -57,9 +62,10 @@ def data_process(str_type):
     global sEtting
     sensor_types = sEtting.sensor_types
     sensor_values = []
-    value_dict = {}
+    value_dict = collections.OrderedDict.fromkeys(sEtting.payload_header)
     value_dict["ver_format"] = sEtting.ver_format
     value_dict["FAKE_GPS"] = sEtting.fake_gps
+    value_dict["tick"] = sEtting.tick
     value_dict["app"] = sEtting.app
     value_dict["ver_app"] = sEtting.ver_app
     value_dict["device_id"] = sEtting.device_id
@@ -89,8 +95,8 @@ def data_process(str_type):
     value_dict["gps_fix"] = 0
     value_dict["gps_num"] = 0
     if str_type == 'raw':
-        payload_str = "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
-
+        payload_str = "|" + "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
+    print payload_str
     return payload_str
 
 def get_reading_csv(sensor):
@@ -109,39 +115,44 @@ def get_reading_csv(sensor):
     return sensor_reading
 
 def get_gps():
-    gpsp = GpsPoller()
+    if gpsd.fix.mode == 1:
+        return sEtting.fgps_lat, sEtting.fgps_lon, sEtting.fgps_alt
+    if gpsd.fix.mode == 2:
+        return gpsd.fix.latitude, gpsd.fix.longitude, sEtting.fgps_alt
+    if gpsd.fix.mode == 3:
+        return gpsd.fix.latitude, gpsd.fix.longitude, gpsd.fix.altitude
+
+
+def main():
+
+    global localtime
+    global value_dict
+    mqttc = mqtt.Client(sEtting.clientid)
+    mqttc.connect(sEtting.mqtt_server, sEtting.mqtt_port, 60)
+    #mqttc.username_pw_set(sEtting.username, password=sEtting.passwd)
+    #Publishing to QIoT
+    mqttc.loop_start()
+    while True:
+        localtime = datetime.datetime.now()
+        payload_str = data_process('raw')
+        #msg = json.JSONEncoder().encode(payload_str)
+        (result, mid) = mqttc.publish(sEtting.mqtt_topic, payload_str, qos=0, retain=False)
+        time.sleep(5)
+
+    mqttc.loop_stop()
+    mqttc.disconnect()
+
+if __name__ == "__main__":
+    global sEtting
+    global gpsp
+    sEtting = Setting()
+    if sEtting.fake_gps == 0:
+        gpsp = GpsPoller()
     try:
         gpsp.start()
-        if gpsd.fix.mode == 1:
-            return sEtting.fgps_lat, sEtting.fgps_lon, sEtting.fgps_alt
-        if gpsd.fix.mode == 2:
-            return gpsd.fix.latitude, gpsd.fix.longitude, sEtting.fgps_alt
-        if gpsd.fix.mode == 3:
-            return gpsd.fix.latitude, gpsd.fix.longitude, gpsd.fix.altitude
+        main()
     except (KeyboardInterrupt, SystemExit): #when you press ctrl+c
         print "\nKilling Thread..."
         gpsp.running = False
         gpsp.join() # wait for the thread to finish what it's doing
-
-
-def main():
-    global sEtting
-    global localtime
-    global value_dict
-    sEtting = Setting()
-    localtime = datetime.datetime.now()
-    payload_str = data_process('raw')
-    pdb.set_trace()
-    mqttc = mqtt.Client(sEtting.clientid)
-    mqttc.username_pw_set(sEtting.username, password=sEtting.passwd)
-    #Publishing to QIoT
-    mqttc.loop_start()
-    while mqttc.loop() == 0:
-        msg = json.JSONEncoder().encode(payload_str)
-        mqttc.connect(sEtting.mqtt_server, sEtting.mqtt_port, 60)
-        mqttc.publish(sEtting.mqtt_topic, payload=msg, qos=0, retain=False)
-    time.sleep(5)
-
-
-if __name__ == "__main__":
-    main()
+    print "Done.\nExiting."
