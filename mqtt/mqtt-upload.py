@@ -1,3 +1,9 @@
+"""This script will get GPS coordinates and upload sensor data by MQTT."""
+# !/usr/bin/python
+# -*- coding: utf-8 -*-
+# written by Freeman Lee
+# Version 0.1.0 @ 2017.8.11
+# License: GPL 2.0
 import serial
 import time
 import datetime
@@ -7,39 +13,55 @@ import json
 import csv
 import collections
 import pdb
+import syslog
+import atexit
 import paho.mqtt.client as mqtt
 from gps import *
 from uuid import getnode as get_mac
+
+# Get settings from 'settings.json'
+with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
+    configs = json.load(json_handle)
+sensor_location = str(configs['global']['sensor_location'])
+data_path = str(configs['global']['base_path'] + configs['global']['csv_path'])
+fake_gps = int(configs['global']['fake_gps'])
+fgps_lat = float(configs['global']['fgps_lat'])
+fgps_lon = float(configs['global']['fgps_lon'])
+fgps_alt = float(configs['global']['fgps_alt'])
+sensor_name = str(configs['mqtt']['sensor_name'])
+debug_enable = int(configs[sensor_name]['debug_enable'])
+update_interval = int(configs[sensor_name]['update_interval'])
+latest_log_interval = int(configs[sensor_name]['update_interval'])
+mqtt_server = str(configs[sensor_name]['mqtt_server'])
+mqtt_port = int(configs[sensor_name]['mqtt_port'])
+mqtt_topic = str(configs[sensor_name]['mqtt_topic'])
+pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
+
 # Global variables intialization
+syslog.openlog(sys.argv[0], syslog.LOG_PID)
 gpsd = None
-
-
 
 class Setting:
     def __init__(self):
         #system general setting
-        self.debug_enable = 0 #Default:0, 0: debug disable , 1: debug enable
-        #self.mqtt_topic="LASS/#"   #REPLACE: to your sensor topic
-        #self.mqtt_topic="LASS/Test/+"  #REPLACE: to your sensor topic, it do not subscribe device id's channel
-        self.mqtt_server = "gpssensor.ddns.net"
-        self.mqtt_port = 1883
-        self.mqtt_topic = "Developer/Test/"  #Default: LASS/Test/+ , REPLACE: to your sensor topic, it do not subscribe device id's channel
-        self.app = "RPi_Airbox" 
-        self.device_id = self.app + '_' + format(get_mac(), 'x')[-6:] 
-        self.clientid="RPiAirboxYM_1502271751"
-        self.username="e119d4cd-4b84-410f-b598-282ae59c9d2a"
-        self.passwd="r:20dae1c1ab24b0f84ea5bfcbfd47e9b2"
-        self.ver_format = 3
-        self.fake_gps = 0
+        self.debug_enable = debug_enable
+        self.mqtt_server = mqtt_server
+        self.mqtt_port = mqtt_port
+        self.mqtt_topic = mqtt_topic
+        self.fake_gps = fake_gps
+        self.fgps_lon = fgps_lon
+        self.fgps_lat = fgps_lat
+        self.fgps_alt = fgps_alt
+        self.app = "RPi_Airbox"
+        self.device_id = self.app + '_' + format(get_mac(), 'x')[-6:]
+        self.clientid = "RPiAirboxYM_1502271751"
+        self.username = "e119d4cd-4b84-410f-b598-282ae59c9d2a"
+        self.passwd = "r:20dae1c1ab24b0f84ea5bfcbfd47e9b2"
         self.ver_format = 3 #Default 3,: filter parameter when filter_par_type=2
         self.ver_app = "0.8.3"
         self.device = "RaspberryPi_3"
         self.sensor_types = ['temperature', 'humidity', 'pm25-at', 'pm10-at']
-        self.payload_header = ('ver_format', 'FAKE_GPS', 'app', 'ver_app', 'device_id', 'tick', 'date', 'time', 'device', 's_d0', 's_t0', 's_h0', 's_d1', 'gps_lat', 'gps_lon', 'gps_fix', 'gps_num', 'gps_alt')
-        self.fgps_lon = 121.3713162
-        self.fgps_lat = 25.055752
-        self.fgps_alt = 0.0
-        self.tick = 0
+        self.payload_header = ('ver_format', 'FAKE_GPS', 'app', 'ver_app', 'device_id', 'date', 'time', 'device', 's_d0', 's_t0', 's_h0', 's_d1', 'gps_lat', 'gps_lon', 'gps_fix', 'gps_num', 'gps_alt')
 
 
 class GpsPoller(threading.Thread):
@@ -58,8 +80,6 @@ class GpsPoller(threading.Thread):
 
 def data_process(str_type):
     """parse the data and form the related variables"""
-    #example payload
-    #ver_format=3|FAKE_GPS=0|app=PM25|ver_app=0.8.3|device_id=Prodisky|tick=2344468811|date=2017-08-07|time=08:54:25|device=LinkItONE|s_0=78423.00|s_1=100.00|s_2=1.00|s_3=0.00|s_4=4.00|s_d0=10.00|s_t0=38.20|s_h0=91.10|s_d1=13.00|gps_lat=24.101681|gps_lon=120.395232|gps_fix=1|gps_num=16|gps_alt=126
     global localtime
     global value_dict
     global sEtting
@@ -68,7 +88,6 @@ def data_process(str_type):
     value_dict = collections.OrderedDict.fromkeys(sEtting.payload_header)
     value_dict["ver_format"] = sEtting.ver_format
     value_dict["FAKE_GPS"] = sEtting.fake_gps
-    value_dict["tick"] = sEtting.tick
     value_dict["app"] = sEtting.app
     value_dict["ver_app"] = sEtting.ver_app
     value_dict["device_id"] = sEtting.device_id
@@ -91,23 +110,22 @@ def data_process(str_type):
         value_dict["gps_lat"] = sEtting.fgps_lat
         value_dict["gps_lon"] = sEtting.fgps_lon
         value_dict["gps_alt"] = sEtting.fgps_alt
+        value_dict["gps_fix"] = 0
     else:
         value_dict["gps_lat"] = get_gps()[0]
         value_dict["gps_lon"] = get_gps()[1]
         value_dict["gps_alt"] = get_gps()[2]
-    value_dict["gps_fix"] = 0
+        value_dict["gps_fix"] = gpsd.fix.mode
     value_dict["gps_num"] = 0
-    if str_type == 'raw':
+    if debug_enable == '0':
         payload_str = "|" + "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
-    print payload_str
+    elif debug_enable == '1':
+        payload_str = ",".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
+        print 'payload_str = ' + payload_str
     return payload_str
 
 def get_reading_csv(sensor):
     """Get sensor readings from latest value csv files in sensor-value folder."""
-    with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
-        configs = json.load(json_handle)
-    data_path = configs['global']['base_path'] + configs['global']['csv_path']
-    sensor_location = configs['global']['sensor_location']
     sensor_reading = None
     csv_path = data_path + sensor + '_' + sensor_location + '_latest_value.csv'
     with open(csv_path, 'r') as csvfile:
@@ -118,6 +136,7 @@ def get_reading_csv(sensor):
     return sensor_reading
 
 def get_gps():
+    """check fix status of gpsd"""
     if gpsd.fix.mode == 1:
         return sEtting.fgps_lat, sEtting.fgps_lon, sEtting.fgps_alt
     if gpsd.fix.mode == 2:
@@ -127,25 +146,50 @@ def get_gps():
 
 
 def main():
+    """Execute main function"""
+    try:
+        global localtime
+        global value_dict
+        def all_done():
+            """Define atexit function"""
+            pid = str(pid_file)
+            os.remove(pid)
 
-    global localtime
-    global value_dict
-    mqttc = mqtt.Client(sEtting.clientid)
-    mqttc.connect(sEtting.mqtt_server, sEtting.mqtt_port, 60)
-    #mqttc.username_pw_set(sEtting.username, password=sEtting.passwd)
-    #Publishing to QIoT
-    mqttc.loop_start()
-    while True:
-        localtime = datetime.datetime.now()
-        payload_str = data_process('raw')
-        #msg = json.JSONEncoder().encode(payload_str)
-        (result, mid) = mqttc.publish(sEtting.mqtt_topic, payload_str, qos=0, retain=False)
-        time.sleep(5)
 
-    mqttc.loop_stop()
-    mqttc.disconnect()
+        def write_pidfile():
+            """Setup PID file"""
+            pid = str(os.getpid())
+            f_pid = open(pid_file, 'w')
+            f_pid.write(pid)
+            f_pid.close()
 
-if __name__ == "__main__":
+
+        atexit.register(all_done)
+        mqttc = mqtt.Client(sEtting.clientid)
+        mqttc.connect(sEtting.mqtt_server, sEtting.mqtt_port, 60)
+        #mqttc.username_pw_set(sEtting.username, password=sEtting.passwd)
+        #Publishing to QIoT
+        write_pidfile()
+        mqttc.loop_start()
+        while True:
+            localtime = datetime.datetime.now()
+            payload_str = data_process('raw')
+            #msg = json.JSONEncoder().encode(payload_str)
+            (result, mid) = mqttc.publish(sEtting.mqtt_topic, payload_str, qos=0, retain=False)
+            time.sleep(update_interval)
+
+        mqttc.loop_stop()
+        mqttc.disconnect()
+
+    except IOError, ioer:
+        syslog.syslog(syslog.LOG_WARNING, "Main thread was died: IOError: %s" % (ioer))
+        pass
+
+    except KeyboardInterrupt:
+        sys.exit(0)
+
+
+if __name__ == '__main__':
     global sEtting
     global gpsp
     sEtting = Setting()

@@ -105,6 +105,16 @@ def write_hist_value(latest_value_datetime):
         write_value(f, latest_value_datetime, v)
 
 
+def get_gps():
+    """Check GPSD fix status"""
+    if gpsd.fix.mode == 1:
+        return configs['global']['fgps_lat'], configs['global']['fgps_lon'], configs['global']['fgps_alt']
+    if gpsd.fix.mode == 2:
+        return gpsd.fix.latitude, gpsd.fix.longitude, configs['global']['fgps_alt']
+    if gpsd.fix.mode == 3:
+        return gpsd.fix.latitude, gpsd.fix.longitude, gpsd.fix.altitude
+
+
 def main():
     """Execute main function"""
     try:
@@ -125,14 +135,7 @@ def main():
         atexit.register(all_done)
         while True:
             # It may take a second or two to get good data
-            latest_latitude = gpsd.fix.latitude
-            latest_longitude = gpsd.fix.longitude
-            latest_altitude = gpsd.fix.altitude
-            if latest_latitude != 'nan' and latest_longitude != 'nan' and latest_altitude != 'nan':
-                latest_reading_value = [latest_latitude, latest_longitude, latest_altitude]
-            elif latest_latitude == 'nan' or latest_longitude == 'nan' or latest_altitude == 'nan':
-                latest_reading_value = [0.0, 0.0, 0.0]
-                syslog.syslog(syslog.LOG_WARNING, "GPS module CANNOT get precisely location")
+            latest_reading_value = [get_gps()]
             latest_value_datetime = datetime.today()
             write_latest_value(latest_value_datetime)
             if enable_history == 1:
@@ -148,8 +151,6 @@ def main():
 
     finally:
         latest_reading_value = []
-        latest_file_path = None
-        history_file_path = None
 
 
 if __name__ == '__main__':

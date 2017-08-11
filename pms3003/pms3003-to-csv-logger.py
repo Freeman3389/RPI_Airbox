@@ -18,24 +18,27 @@ import atexit
 from struct import *
 from datetime import datetime, date
 from array import *
-from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
 with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
     configs = json.load(json_handle)
-sensor_location = configs['global']['sensor_location']
-sensor_readings_list = configs['pms3003']['sensor_readings_list']
-data_path = configs['global']['base_path'] + configs['global']['csv_path']
-latest_log_interval = int(configs['pms3003']['latest_log_interval'])
-history_log_interval = int(configs['pms3003']['history_log_interval'])
-csv_entry_format = configs['pms3003']['csv_entry_format']
-pid_file = str(configs['global']['base_path']) + str(configs['pms3003']['sensor_name']) + '.pid'
+sensor_location = str(configs['global']['sensor_location'])
+data_path = str(configs['global']['base_path'] + configs['global']['csv_path'])
+enable_history = int(configs['global']['enable_history'])
+sensor_name = str(configs['pms3003']['sensor_name'])
+sensor_readings_list = configs[sensor_name]['sensor_readings_list']
+latest_log_interval = int(configs[sensor_name]['latest_log_interval'])
+csv_entry_format = configs[sensor_name]['csv_entry_format']
+pin = int(configs[sensor_name]['gpio_pin'])
+pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
+serial_device = configs[sensor_name]['serial_device']
 # Initial variables
+global latest_reading_value
+latest_reading_value = []
 latest_value_datetime = None
-debug = 0  # class g3sensor debug mode
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
-# Serial Port device name
-serial_device = configs['pms3003']['serial_device']
+debug = 0  # class g3sensor debug mode
+air = None
 
 # work for pms3003
 # data structure: https://github.com/avaldebe/AQmon/blob/master/Documents/PMS3003_LOGOELE.pdf
@@ -171,39 +174,29 @@ def open_file_write_header(file_path, mode, csv_header):
     return f
 
 
-def write_hist_value_callback():
-    """Check if the target file is new, and write header."""
-    for f, v in zip(f_history_values, latest_reading_value):
-        write_value(f, latest_value_datetime, v)
-
-
-def write_latest_value():
-    """For apscheduler to append latest value into history csv file."""
+def write_latest_value(latest_value_datetim):
+    """For while loop in main() to write latest value into latest csv file."""
+    global latest_reading_value
     i = 0
     for reading in sensor_readings_list:
         with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
-            write_value(f_latest_value, latest_value_datetime,
-                        latest_reading_value[i])
+            write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
         i += 1
     i = 0
 
 
-if __name__ == '__main__':
-    air = g3sensor()
-    # create timer that is called every n seconds, without accumulating delays as when using sleep
-    syslog.syslog(syslog.LOG_INFO, "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi...")
-    logging.basicConfig()
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(write_hist_value_callback, 'interval',seconds=history_log_interval)
-    scheduler.start()
-    syslog.syslog(syslog.LOG_INFO, "Started interval timer which will be called the first time in {0} seconds.".format(history_log_interval))
-    # get file instance of 'history_file_path'
+def write_hist_value(latest_value_datetime):
+    """Append latest value into history csv file."""
+    global latest_reading_value
     f_history_values = []
     for index, reading in enumerate(sensor_readings_list, start=0):
-        f_history_values.append(open_file_write_header(get_readings_parameters(
-            reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+        f_history_values.append(open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+    for f, v in zip(f_history_values, latest_reading_value):
+        write_value(f, latest_value_datetime, v)
 
 
+if __name__ == '__main__':
+    air = g3sensor()
     def all_done():
         """Define atexit function"""
         pid = str(pid_file)
@@ -221,22 +214,23 @@ if __name__ == '__main__':
     while True:
         pmdata = 0
         try:
-            pmdata = air.read(serial_device)       
+            pmdata = air.read(serial_device)
             if pmdata != 0:
-                latest_reading_value = pmdata
+                latest_reading_value = [pmdata]
                 latest_value_datetime = datetime.today()
-                write_latest_value()
+                write_latest_value(latest_value_datetime)
+                if enable_history == 1:
+                    write_hist_value(latest_value_datetime)
+                else:
+                    pass
             write_pidfile()
             time.sleep(latest_log_interval)
         except IOError as ioer:
             syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
             latest_reading_value = []
             time.sleep(10)
-        except (KeyboardInterrupt):
-            scheduler.shutdown()
+        except KeyboardInterrupt:
             latest_reading_value = []
-            latest_file_path = None
-            history_file_path = None
             sys.exit(0)
         finally:
             pmdata = 0

@@ -121,7 +121,7 @@ def main():
 
         atexit.register(all_done)
         while True:
-            latest_reading_value = get_sensor_readings(sensor, pin)
+            latest_reading_value = [get_sensor_readings(sensor, pin)]
             latest_value_datetime = datetime.today()
             write_latest_value(latest_value_datetime)
             if enable_history == 1:

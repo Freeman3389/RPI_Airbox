@@ -38,7 +38,7 @@ def check_proc_running(module, pid_file):
 
 
 def main():
-
+    """Execute main function"""
     while True:
         syslog.openlog(sys.argv[0], syslog.LOG_PID)
         enabled_module_list = []
@@ -70,16 +70,18 @@ def main():
                     time.sleep(5)
             message_str = 'Loader summary: Enabled - ' + str(w) + ' ; Disabled - ' + str(x) + ' ; Running - ' + str(y) + ' ; Loading - ' + str(z) + '\nEnabled Modules - ' + (', '.join(enabled_module_list)) + '\nDisabled Modules - ' + (', '.join(disabled_module_list)) + '\nRunning Modules - ' + (', '.join(message_running)) + '\nLoading Modules - ' + (', '.join(message_load))
             syslog.syslog(syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str)
-            print syslog.LOG_INFO, 'Finished checking RPi_Aribox scripts\n'+ message_str
+            print 'Finished checking RPi_Aribox scripts\n' + message_str
             time.sleep(1)
 
-        except IOError, ioer:
-            syslog.syslog(syslog.LOG_WARNING, "Loader thread was died: IOError: %s" % (ioer))
+        except IOError as (errno, strerror):
+            print "I/O error({0}): {1}".format(errno, strerror)
+            syslog.syslog(syslog.LOG_INFO, "I/O error({0}): {1}".format(errno, strerror))
             time.sleep(60)
-            pass
-
-        else:
-            break
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            time.sleep(60)
+            raise
+        break
 
 if __name__ == "__main__":
     start_time = time.time()
