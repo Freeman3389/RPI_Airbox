@@ -8,10 +8,20 @@
     "fake_gps": "0",
     "fgps_lon": "121.3713162",
     "fgps_lat": "25.055752",
-    "fgps_alt": "0.0"
+    "fgps_alt": "0.0",
+    "loading_order": [
+      "dht22",
+      "pms3003",
+      "mq2",
+      "neo6m",
+      "lcd1602",
+      "sh1106",
+      "thingspeak",
+      "mqtt"
+    ]
   },
   "neo6m": {
-    "status": "0",
+    "status": "1",
     "sensor_name": "neo6m",
     "executable_path": "neo6m/neo6m-to-csv-logger.py",
     "latest_log_interval": "120",
@@ -23,7 +33,7 @@
     ]
   },
   "pms3003": {
-    "status": "0",
+    "status": "1",
     "sensor_name": "pms3003",
     "serial_device": "/dev/ttyS0",
     "executable_path": "pms3003/pms3003-to-csv-logger.py",
@@ -51,7 +61,7 @@
     ]
   },
     "mq2": {
-    "status": "1",
+    "status": "0",
     "sensor_name": "mq2",
     "mq_channel": "0",
     "executable_path": "mq2/mq2-to-csv-logger.py",
@@ -64,7 +74,7 @@
     ]
   },
   "lcd1602": {
-    "status": "0",
+    "status": "1",
     "sensor_name": "lcd1602",
     "i2c_bus": "1",
     "i2c_address": "0x3f",
@@ -85,14 +95,14 @@
     ]
   },
   "thingspeak": {
-    "status": "0",
+    "status": "1",
     "sensor_name": "thingspeak",
     "api_key": "[your api key]",
     "executable_path": "thingspeak/thingspeak-upload.py",
     "update_interval": "300"
   },
   "sh1106": {
-    "status": "1",
+    "status": "0",
     "sensor_name": "sh1106",
     "i2c_port": "1",
     "i2c_address": "0x3C",

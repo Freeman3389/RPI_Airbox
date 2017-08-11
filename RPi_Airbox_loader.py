@@ -39,7 +39,8 @@ def check_proc_running(module, pid_file):
 
 def main():
     """Execute main function"""
-    while True:
+    retry_count = 0
+    while retry_count > MAX_RETRY:
         syslog.openlog(sys.argv[0], syslog.LOG_PID)
         enabled_module_list = []
         disabled_module_list = []
@@ -57,8 +58,8 @@ def main():
 
         try:
             syslog.syslog(syslog.LOG_INFO, 'Begin to check RPi_Airbox enabled scripts.')
-            for module in configs.keys():
-                if module != 'global' and int(configs.get(module).get('status')) == 1:
+            for module in configs['global']['loading_order']:
+                if int(configs.get(module).get('status')) == 1:
                     pid_file = str(configs['global']['base_path']) + str(configs[module]['sensor_name']) + '.pid'
                     w += 1
                     enabled_module_list.append(module)
@@ -76,10 +77,12 @@ def main():
         except IOError as (errno, strerror):
             print "I/O error({0}): {1}".format(errno, strerror)
             syslog.syslog(syslog.LOG_INFO, "I/O error({0}): {1}".format(errno, strerror))
+            retry_count += 1
             time.sleep(60)
         except:
             print "Unexpected error:", sys.exc_info()[0]
             time.sleep(60)
+            retry_count += 1
             raise
         break
 
