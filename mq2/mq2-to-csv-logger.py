@@ -15,21 +15,22 @@ import syslog
 import json
 import os
 import atexit
-#import pdb
-# install dependency with 'sudo easy_install apscheduler' NOT with 'sudo pip install apscheduler'
-from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
 with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
     configs = json.load(json_handle)
-sensor_location = configs['global']['sensor_location']
-sensor_readings_list = configs['mq2']['sensor_readings_list']
-data_path = configs['global']['base_path'] + configs['global']['csv_path']
-latest_log_interval = int(configs['mq2']['latest_log_interval'])
-history_log_interval = int(configs['mq2']['history_log_interval'])
-csv_entry_format = configs['mq2']['csv_entry_format']
-pid_file = str(configs['global']['base_path']) + str(configs['mq2']['sensor_name']) + '.pid'
+sensor_location = str(configs['global']['sensor_location'])
+data_path = str(configs['global']['base_path'] + configs['global']['csv_path'])
+enable_history = int(configs['global']['enable_history'])
+sensor_name = str(configs['mq2']['sensor_name'])
+sensor_readings_list = configs[sensor_name]['sensor_readings_list']
+latest_log_interval = int(configs[sensor_name]['latest_log_interval'])
+csv_entry_format = configs[sensor_name]['csv_entry_format']
+pin = int(configs[sensor_name]['gpio_pin'])
+pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
+
 # Initial variables
+global latest_reading_value
 latest_reading_value = []
 latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
@@ -63,14 +64,9 @@ def open_file_write_header(file_path, mode, csv_header):
     return f_csv
 
 
-def write_hist_value_callback():
-    """For apscheduler to append latest value into history csv file."""
-    for f, v in zip(f_history_values, latest_reading_value):
-        write_value(f, latest_value_datetime, v)
-
-
-def write_latest_value():
+def write_latest_value(latest_value_datetim):
     """For while loop in main() to write latest value into latest csv file."""
+    global latest_reading_value
     i = 0
     for reading in sensor_readings_list:
         with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
@@ -79,56 +75,56 @@ def write_latest_value():
     i = 0
 
 
-f_history_values = []
-for index, reading in enumerate(sensor_readings_list, start=0):
-    f_history_values.append(open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+def write_hist_value(latest_value_datetime):
+    """For apscheduler to append latest value into history csv file."""
+    global latest_reading_value
+    f_history_values = []
+    for index, reading in enumerate(sensor_readings_list, start=0):
+        f_history_values.append(open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+    for f, v in zip(f_history_values, latest_reading_value):
+        write_value(f, latest_value_datetime, v)
 
 
-syslog.syslog(syslog.LOG_INFO, "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi...")
-# create timer that is called every n seconds, without accumulating delays as when using sleep
-logging.basicConfig()
-scheduler = BackgroundScheduler()
-scheduler.add_job(write_hist_value_callback, 'interval',
-                  seconds=history_log_interval)
-scheduler.start()
-syslog.syslog(syslog.LOG_INFO, 'Started interval timer which will be called the first time in {0} seconds.'.format(history_log_interval))
+def main():
+    """Execute main function"""
+    try:
+        syslog.syslog(syslog.LOG_INFO, "Get MQ2 Sensor Readings.")
+
+        def all_done():
+            """Define atexit function"""
+            pid = str(pid_file)
+            os.remove(pid)
 
 
-try:
-    syslog.syslog(syslog.LOG_INFO, "Get MQ2 Sensor Readings.")
-
-    def all_done():
-        """Define atexit function"""
-        pid = str(pid_file)
-        os.remove(pid)
-
-
-    def write_pidfile():
-        """Setup PID file"""
-        pid = str(os.getpid())
-        f_pid = open(pid_file, 'w')
-        f_pid.write(pid)
-        f_pid.close()
+        def write_pidfile():
+            """Setup PID file"""
+            pid = str(os.getpid())
+            f_pid = open(pid_file, 'w')
+            f_pid.write(pid)
+            f_pid.close()
 
 
-    atexit.register(all_done)
-    mq = MQ()
-    while True:
-        latest_reading_value = list(mq.MQPercentage().values())
-        #pdb.set_trace()
-        time.sleep(latest_log_interval)
-        latest_value_datetime = datetime.today()
-        write_latest_value()
-        write_pidfile()
+        atexit.register(all_done)
+        mq = MQ()
+        while True:
+            latest_reading_value = list(mq.MQPercentage().values())
+            latest_value_datetime = datetime.today()
+            write_latest_value(latest_value_datetime)
+            if enable_history == 1:
+                write_hist_value(latest_value_datetime)
+            else:
+                pass
+            write_pidfile()
+            time.sleep(latest_log_interval)
 
-except IOError as ioer:
-    syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
-    latest_reading_value = []
-    time.sleep(10)
+    except IOError as ioer:
+        syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
+        latest_reading_value = []
+        time.sleep(10)
 
-except KeyboardInterrupt:
-    scheduler.shutdown()
-    latest_reading_value = []
-    latest_file_path = None
-    history_file_path = None
-    sys.exit(0)
+    except KeyboardInterrupt:
+        latest_reading_value = []
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()

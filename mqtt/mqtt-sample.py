@@ -9,6 +9,7 @@ import collections
 import pdb
 import paho.mqtt.client as mqtt
 from gps import *
+from uuid import getnode as get_mac
 # Global variables intialization
 gpsd = None
 
@@ -21,13 +22,13 @@ class Setting:
         self.mqtt_server = "gpssensor.ddns.net"
         self.mqtt_port = 1883
         self.mqtt_topic = "Developer/Test/"  #Default: LASS/Test/+ , REPLACE: to your sensor topic, it do not subscribe device id's channel
-        self.device_id = "RPi_Airbox_000000" #Default: YOUR_DEVICE_NAME, REPLACE: to your device id
+        self.app = "RPi_Airbox" 
+        self.device_id = self.app + '_' + format(get_mac(), 'x')[-6:] 
         self.clientid="RPiAirboxYM_1502271751"
         self.username="e119d4cd-4b84-410f-b598-282ae59c9d2a"
         self.passwd="r:20dae1c1ab24b0f84ea5bfcbfd47e9b2"
         self.ver_format = 3
         self.fake_gps = 0
-        self.app = "RPi_Airbox"
         self.ver_format = 3 #Default 3,: filter parameter when filter_par_type=2
         self.ver_app = "0.8.3"
         self.device = "RaspberryPi_3"

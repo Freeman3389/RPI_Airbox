@@ -3,15 +3,19 @@
     "sensor_location": "Testing-Place",
     "account": "rpisensor",
     "base_path": "/opt/RPi_Airbox/",
-    "csv_path": "monitor_web/sensor_values/"
+    "csv_path": "monitor_web/sensor_values/",
+    "enable_history": "0",
+    "fake_gps": "0",
+    "fgps_lon": "121.3713162",
+    "fgps_lat": "25.055752",
+    "fgps_alt": "0.0"
   },
   "neo6m": {
     "status": "0",
     "sensor_name": "neo6m",
     "executable_path": "neo6m/neo6m-to-csv-logger.py",
-    "history_log_interval": "60",
     "latest_log_interval": "120",
-    "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.5f}\n",
+    "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.6f}\n",
     "sensor_readings_list": [
       "latitude",
       "longitude",
@@ -24,7 +28,6 @@
     "serial_device": "/dev/ttyS0",
     "executable_path": "pms3003/pms3003-to-csv-logger.py",
     "latest_log_interval": "60",
-    "history_log_interval": "300",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.0f}\n",
     "sensor_readings_list": [
       "pm1-cf",
@@ -41,7 +44,6 @@
     "gpio_pin": "4",
     "executable_path": "dht22/dht22-to-csv-logger.py",
     "latest_log_interval": "60",
-    "history_log_interval": "300",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n",
     "sensor_readings_list": [
       "humidity",
@@ -54,7 +56,6 @@
     "mq_channel": "0",
     "executable_path": "mq2/mq2-to-csv-logger.py",
     "latest_log_interval": "10",
-    "history_log_interval": "300",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.6f}\n",
     "sensor_readings_list": [
       "GAS-LPG",

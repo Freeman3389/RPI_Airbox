@@ -17,27 +17,26 @@ from gps import *
 # from time import *
 from datetime import datetime
 from array import *
-from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
 with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
     configs = json.load(json_handle)
-sensor_location = configs['global']['sensor_location']
-sensor_readings_list = configs['neo6m']['sensor_readings_list']
-data_path = configs['global']['base_path'] + configs['global']['csv_path']
-latest_log_interval = int(configs['neo6m']['latest_log_interval'])
-history_log_interval = int(configs['neo6m']['history_log_interval'])
-csv_entry_format = configs['neo6m']['csv_entry_format']
-pid_file = str(configs['global']['base_path']) + str(configs['neo6m']['sensor_name']) + '.pid'
+sensor_location = str(configs['global']['sensor_location'])
+data_path = str(configs['global']['base_path'] + configs['global']['csv_path'])
+enable_history = int(configs['global']['enable_history'])
+sensor_name = str(configs['neo6m']['sensor_name'])
+sensor_readings_list = configs[sensor_name]['sensor_readings_list']
+latest_log_interval = int(configs[sensor_name]['latest_log_interval'])
+csv_entry_format = configs[sensor_name]['csv_entry_format']
+pin = int(configs[sensor_name]['gpio_pin'])
+pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
+
 # Initial variables
-gpsd = None                  # seting the global variable
+global latest_reading_value
 latest_reading_value = []
-latest_latitude = 0.0
-latest_longitude = 0.0
-latest_altitude = 0.0
 latest_value_datetime = None
-file_handle = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
+gpsd = None
 
 
 class GpsPoller(threading.Thread):
@@ -85,14 +84,9 @@ def open_file_write_header(file_path, mode, csv_header):
     return f_csv
 
 
-def write_hist_value_callback():
-    """For apscheduler to append latest value into history csv file."""
-    for f, v in zip(f_history_values, latest_reading_value):
-        write_value(f, latest_value_datetime, v)
-
-
-def write_latest_value():
+def write_latest_value(latest_value_datetim):
     """For while loop in main() to write latest value into latest csv file."""
+    global latest_reading_value
     i = 0
     for reading in sensor_readings_list:
         with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
@@ -101,20 +95,18 @@ def write_latest_value():
     i = 0
 
 
-gpsp = GpsPoller()  # create the thread
-syslog.syslog(syslog.LOG_INFO, "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi...")
-# create timer that is called every n seconds, without accumulating delays as when using sleep
-scheduler = BackgroundScheduler()
-scheduler.add_job(write_hist_value_callback, 'interval', seconds=history_log_interval)
-scheduler.start()
-syslog.syslog(syslog.LOG_INFO, "Started interval timer which will be called the first time in {0} seconds.".format(history_log_interval))
+def write_hist_value(latest_value_datetime):
+    """For apscheduler to append latest value into history csv file."""
+    global latest_reading_value
+    f_history_values = []
+    for index, reading in enumerate(sensor_readings_list, start=0):
+        f_history_values.append(open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+    for f, v in zip(f_history_values, latest_reading_value):
+        write_value(f, latest_value_datetime, v)
 
-f_history_values = []
-for index, reading in enumerate(sensor_readings_list, start=0):
-    f_history_values.append(open_file_write_header(get_readings_parameters(
-        reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
 
-if __name__ == '__main__':
+def main():
+    """Execute main function"""
     try:
         def all_done():
             """Define atexit function"""
@@ -131,7 +123,6 @@ if __name__ == '__main__':
 
 
         atexit.register(all_done)
-        gpsp.start()  # start it up
         while True:
             # It may take a second or two to get good data
             latest_latitude = gpsd.fix.latitude
@@ -143,20 +134,33 @@ if __name__ == '__main__':
                 latest_reading_value = [0.0, 0.0, 0.0]
                 syslog.syslog(syslog.LOG_WARNING, "GPS module CANNOT get precisely location")
             latest_value_datetime = datetime.today()
-            write_latest_value()
+            write_latest_value(latest_value_datetime)
+            if enable_history == 1:
+                write_hist_value(latest_value_datetime)
+            else:
+                pass
             write_pidfile()
             time.sleep(latest_log_interval)  # set to whatever
 
-    except (KeyboardInterrupt):  # when you press ctrl+c
-        print "\nKilling Thread..."
-        gpsp.running = False
-        gpsp.join()  # wait for the thread to finish what it's doing
-        scheduler.shutdown()
-        sys.exit(0)
     except IOError as ioer:
         syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
         time.sleep(10)
+
     finally:
         latest_reading_value = []
         latest_file_path = None
         history_file_path = None
+
+
+if __name__ == '__main__':
+    global gpsp
+    gpsp = GpsPoller()  # create the thread
+    try:
+        gpsp.start()  # start it up
+        main()
+
+    except KeyboardInterrupt:  # when you press ctrl+c
+        print "\nKilling Thread..."
+        gpsp.running = False
+        gpsp.join()  # wait for the thread to finish what it's doing
+        sys.exit(0)

@@ -22,34 +22,36 @@ import atexit
 # import pdb
 from datetime import datetime
 from array import *
-# install dependency with 'sudo easy_install apscheduler' NOT with 'sudo pip install apscheduler'
-from apscheduler.schedulers.background import BackgroundScheduler
 
 # Get settings from 'settings.json'
 with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
     configs = json.load(json_handle)
-sensor_location = configs['global']['sensor_location']
-sensor_readings_list = configs['dht22']['sensor_readings_list']
-data_path = configs['global']['base_path'] + configs['global']['csv_path']
-latest_log_interval = int(configs['dht22']['latest_log_interval'])
-history_log_interval = int(configs['dht22']['history_log_interval'])
-csv_entry_format = configs['dht22']['csv_entry_format']
-pin = int(configs['dht22']['gpio_pin'])
-pid_file = str(configs['global']['base_path']) + str(configs['dht22']['sensor_name']) + '.pid'
+sensor_location = str(configs['global']['sensor_location'])
+data_path = str(configs['global']['base_path'] + configs['global']['csv_path'])
+enable_history = int(configs['global']['enable_history'])
+sensor_name = str(configs['dht22']['sensor_name'])
+sensor_readings_list = configs[sensor_name]['sensor_readings_list']
+latest_log_interval = int(configs[sensor_name]['latest_log_interval'])
+csv_entry_format = configs[sensor_name]['csv_entry_format']
+pin = int(configs[sensor_name]['gpio_pin'])
+pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
+
 # Initial variables
-sensor = Adafruit_DHT.AM2302
+global latest_reading_value
 latest_reading_value = []
 latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
+sensor = Adafruit_DHT.AM2302
 
 
 def get_sensor_readings(sensor, pin):
     """Pass parameters of DHT22 sensor and GPIO #, get Reading vaules."""
     dht22_readings = Adafruit_DHT.read_retry(sensor, pin)
     if all(dht22_readings):
-        return (map(lambda x: float('%0.2f' % x), dht22_readings))
+        return map(lambda x: float('%0.2f' % x), dht22_readings)
     else:
         syslog.syslog(syslog.LOG_WARNING, "CANNOT get correct readings from DHT22 sensor!")
+
 
 def get_readings_parameters(reading, type):
     """Pass kind of reading and type to get return parameters."""
@@ -78,67 +80,64 @@ def open_file_write_header(file_path, mode, csv_header):
     return f_csv
 
 
-def write_hist_value_callback():
-    """For apscheduler to append latest value into history csv file."""
-    for f, v in zip(f_history_values, latest_reading_value):
-        write_value(f, latest_value_datetime, v)
-
-
-def write_latest_value():
+def write_latest_value(latest_value_datetim):
     """For while loop in main() to write latest value into latest csv file."""
+    global latest_reading_value
     i = 0
     for reading in sensor_readings_list:
         with open_file_write_header(get_readings_parameters(reading, 'latest_file_path'), 'w', get_readings_parameters(reading, 'csv_header_reading')) as f_latest_value:
-            write_value(f_latest_value, latest_value_datetime,latest_reading_value[i])
+            write_value(f_latest_value, latest_value_datetime, latest_reading_value[i])
         i += 1
     i = 0
 
 
-f_history_values = []
-for index, reading in enumerate(sensor_readings_list, start=0):
-    f_history_values.append(open_file_write_header(get_readings_parameters(
-    reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+def write_hist_value(latest_value_datetime):
+    """For apscheduler to append latest value into history csv file."""
+    global latest_reading_value
+    f_history_values = []
+    for index, reading in enumerate(sensor_readings_list, start=0):
+        f_history_values.append(open_file_write_header(get_readings_parameters(reading, 'history_file_path'), 'a', get_readings_parameters(reading, 'csv_header_reading')))
+    for f, v in zip(f_history_values, latest_reading_value):
+        write_value(f, latest_value_datetime, v)
 
-syslog.syslog(syslog.LOG_INFO, "Ignoring first 2 sensor values to improve quality...")
-for x in range(2):
-    Adafruit_DHT.read_retry(sensor, pin)
 
-syslog.syslog(syslog.LOG_INFO, "Creating interval timer. This step takes almost 2 minutes on the Raspberry Pi...")
-# create timer that is called every n seconds, without accumulating delays as when using sleep
-logging.basicConfig()
-scheduler = BackgroundScheduler()
-scheduler.add_job(write_hist_value_callback, 'interval',
-                  seconds=history_log_interval)
-scheduler.start()
-syslog.syslog(syslog.LOG_INFO, 'Started interval timer which will be called the first time in {0} seconds.'.format(history_log_interval))
+def main():
+    """Execute main function"""
+    syslog.syslog(syslog.LOG_INFO, "Ignoring first 2 sensor values to improve quality...")
+    for x in range(2):
+        Adafruit_DHT.read_retry(sensor, pin)
+    try:
+        def all_done():
+            """Define atexit function"""
+            pid = str(pid_file)
+            os.remove(pid)
 
-try:
-    def all_done():
-        """Define atexit function"""
-        pid = str(pid_file)
-        os.remove(pid)
+        def write_pidfile():
+            """Setup PID file"""
+            pid = str(os.getpid())
+            f_pid = open(pid_file, 'w')
+            f_pid.write(pid)
+            f_pid.close()
 
-    def write_pidfile():
-        """Setup PID file"""
-        pid = str(os.getpid())
-        f_pid = open(pid_file, 'w')
-        f_pid.write(pid)
-        f_pid.close()
+        atexit.register(all_done)
+        while True:
+            latest_reading_value = get_sensor_readings(sensor, pin)
+            latest_value_datetime = datetime.today()
+            write_latest_value(latest_value_datetime)
+            if enable_history == 1:
+                write_hist_value(latest_value_datetime)
+            else:
+                pass
+            write_pidfile()
+            time.sleep(latest_log_interval)
 
-    while True:
-        latest_reading_value = get_sensor_readings(sensor, pin)
-        latest_value_datetime = datetime.today()
-        write_latest_value()
-        time.sleep(latest_log_interval)
-        write_pidfile()
+    except IOError as ioer:
+        syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
+        latest_reading_value = []
+        time.sleep(10)
+    except KeyboardInterrupt:
+        latest_reading_value = []
+        sys.exit(0)
 
-except IOError as ioer:
-    syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
-    latest_reading_value = []
-    time.sleep(10)
-except KeyboardInterrupt:
-    scheduler.shutdown()
-    latest_reading_value = []
-    latest_file_path = None
-    history_file_path = None
-    sys.exit(0)
+if __name__ == "__main__":
+    main()

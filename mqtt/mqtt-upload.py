@@ -1,38 +1,47 @@
-#! /usr/bin/python
-# Written by Dan Mandle http://dan.mandle.me September 2012
-# License: GPL 2.0
-import paho.mqtt.client as mqtt
-import os
-from gps import *
-from time import *
+import serial
 import time
+import datetime
 import threading
- 
-gpsd = None #seting the global variable
+import os
+import json
+import csv
+import collections
+import pdb
+import paho.mqtt.client as mqtt
+from gps import *
+from uuid import getnode as get_mac
+# Global variables intialization
+gpsd = None
 
-class Settings:
-    '''Get general settings from configs.json'''
-    with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
-        configs = json.load(json_handle)
-    self.debug_enable=0 #Default:0, 0: debug disable , 1: debug enable
-    self.plot_cnt=90 #Default:90,  the value count in plotter, if 10 seconds for 1 value, about 15 min.
-    #self.mqtt_topic="LASS/#"   #REPLACE: to your sensor topic
-    #self.mqtt_topic="LASS/Test/+"  #REPLACE: to your sensor topic, it do not subscribe device id's channel
-    self.mqtt_topic="LASS/Test/#"  #Default: LASS/Test/+ , REPLACE: to your sensor topic, it do not subscribe device id's channel
-    self.filter_par_type=2 #Default: 0, 0: no filer, 1: filter device_id, 2: filter ver_format
-    self.device_id="" #Default: YOUR_DEVICE_NAME, REPLACE: to your device id
-    self.ver_format=3 #Default 3,: filter parameter when filter_par_type=2
-    self.kml_export_type=0 #Default:0, default kml export type. name = deviceid_localtime
-    self.plot_enabled=0 #Default:0, 0: realtime plot not active, 1: active plot
-    self.plot_save=1 #Default:1, 0: show plot realtime, 1:plot to file
-    self.log_enabled=1 #Default:1, 0: not auto save receive data in log format, 1: auto save receive data in log format
-    self.auto_monitor=0 #Default:1,0: not auto start monitor command, 1: auto start monitor commmand
-    # plot, kml marker's color only apply to 1 sensor, this is the sensor id
-    #0: battery level, 1: battery charging, 2: ground speed ( Km/hour )
-    #10: dust sensor, 11: UIdust sensor, 12: sound sensor
-    self.sensor_cur=0   #Default:0,REPLACE: to your interest current sensor
 
- 
+
+class Setting:
+    def __init__(self):
+        #system general setting
+        self.debug_enable = 0 #Default:0, 0: debug disable , 1: debug enable
+        #self.mqtt_topic="LASS/#"   #REPLACE: to your sensor topic
+        #self.mqtt_topic="LASS/Test/+"  #REPLACE: to your sensor topic, it do not subscribe device id's channel
+        self.mqtt_server = "gpssensor.ddns.net"
+        self.mqtt_port = 1883
+        self.mqtt_topic = "Developer/Test/"  #Default: LASS/Test/+ , REPLACE: to your sensor topic, it do not subscribe device id's channel
+        self.app = "RPi_Airbox" 
+        self.device_id = self.app + '_' + format(get_mac(), 'x')[-6:] 
+        self.clientid="RPiAirboxYM_1502271751"
+        self.username="e119d4cd-4b84-410f-b598-282ae59c9d2a"
+        self.passwd="r:20dae1c1ab24b0f84ea5bfcbfd47e9b2"
+        self.ver_format = 3
+        self.fake_gps = 0
+        self.ver_format = 3 #Default 3,: filter parameter when filter_par_type=2
+        self.ver_app = "0.8.3"
+        self.device = "RaspberryPi_3"
+        self.sensor_types = ['temperature', 'humidity', 'pm25-at', 'pm10-at']
+        self.payload_header = ('ver_format', 'FAKE_GPS', 'app', 'ver_app', 'device_id', 'tick', 'date', 'time', 'device', 's_d0', 's_t0', 's_h0', 's_d1', 'gps_lat', 'gps_lon', 'gps_fix', 'gps_num', 'gps_alt')
+        self.fgps_lon = 121.3713162
+        self.fgps_lat = 25.055752
+        self.fgps_alt = 0.0
+        self.tick = 0
+
+
 class GpsPoller(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -46,57 +55,107 @@ class GpsPoller(threading.Thread):
         while gpsp.running:
             gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
 
-def readlineCR(port):
-    rv = ""
+
+def data_process(str_type):
+    """parse the data and form the related variables"""
+    #example payload
+    #ver_format=3|FAKE_GPS=0|app=PM25|ver_app=0.8.3|device_id=Prodisky|tick=2344468811|date=2017-08-07|time=08:54:25|device=LinkItONE|s_0=78423.00|s_1=100.00|s_2=1.00|s_3=0.00|s_4=4.00|s_d0=10.00|s_t0=38.20|s_h0=91.10|s_d1=13.00|gps_lat=24.101681|gps_lon=120.395232|gps_fix=1|gps_num=16|gps_alt=126
+    global localtime
+    global value_dict
+    global sEtting
+    sensor_types = sEtting.sensor_types
+    sensor_values = []
+    value_dict = collections.OrderedDict.fromkeys(sEtting.payload_header)
+    value_dict["ver_format"] = sEtting.ver_format
+    value_dict["FAKE_GPS"] = sEtting.fake_gps
+    value_dict["tick"] = sEtting.tick
+    value_dict["app"] = sEtting.app
+    value_dict["ver_app"] = sEtting.ver_app
+    value_dict["device_id"] = sEtting.device_id
+    value_dict["date"] = localtime.strftime("%Y-%m-%d")
+    value_dict["time"] = localtime.strftime("%H:%M:%S")
+    value_dict["device"] = sEtting.device
+
+    for sensor in sensor_types:
+        if sensor == 'pm25-at':
+            value_dict["s_d0"] = get_reading_csv(sensor)
+        elif sensor == 'temperature':
+            value_dict["s_t0"] = get_reading_csv(sensor)
+        elif sensor == 'humidity':
+            value_dict["s_h0"] = get_reading_csv(sensor)
+        elif sensor == 'pm10-at':
+            value_dict["s_d1"] = get_reading_csv(sensor)
+        else:
+            print 'Not support sensor type.'
+    if sEtting.fake_gps == 1:
+        value_dict["gps_lat"] = sEtting.fgps_lat
+        value_dict["gps_lon"] = sEtting.fgps_lon
+        value_dict["gps_alt"] = sEtting.fgps_alt
+    else:
+        value_dict["gps_lat"] = get_gps()[0]
+        value_dict["gps_lon"] = get_gps()[1]
+        value_dict["gps_alt"] = get_gps()[2]
+    value_dict["gps_fix"] = 0
+    value_dict["gps_num"] = 0
+    if str_type == 'raw':
+        payload_str = "|" + "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
+    print payload_str
+    return payload_str
+
+def get_reading_csv(sensor):
+    """Get sensor readings from latest value csv files in sensor-value folder."""
+    with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
+        configs = json.load(json_handle)
+    data_path = configs['global']['base_path'] + configs['global']['csv_path']
+    sensor_location = configs['global']['sensor_location']
+    sensor_reading = None
+    csv_path = data_path + sensor + '_' + sensor_location + '_latest_value.csv'
+    with open(csv_path, 'r') as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=',')
+        next(csvreader)  # skip header of csv file
+        for row in csvreader:
+            sensor_reading = row[1]  # get second value
+    return sensor_reading
+
+def get_gps():
+    if gpsd.fix.mode == 1:
+        return sEtting.fgps_lat, sEtting.fgps_lon, sEtting.fgps_alt
+    if gpsd.fix.mode == 2:
+        return gpsd.fix.latitude, gpsd.fix.longitude, sEtting.fgps_alt
+    if gpsd.fix.mode == 3:
+        return gpsd.fix.latitude, gpsd.fix.longitude, gpsd.fix.altitude
+
+
+def main():
+
+    global localtime
+    global value_dict
+    mqttc = mqtt.Client(sEtting.clientid)
+    mqttc.connect(sEtting.mqtt_server, sEtting.mqtt_port, 60)
+    #mqttc.username_pw_set(sEtting.username, password=sEtting.passwd)
+    #Publishing to QIoT
+    mqttc.loop_start()
     while True:
-        ch = port.read()
-        rv += ch
-        if ch=='\r' or ch=='':
-          return rv
+        localtime = datetime.datetime.now()
+        payload_str = data_process('raw')
+        #msg = json.JSONEncoder().encode(payload_str)
+        (result, mid) = mqttc.publish(sEtting.mqtt_topic, payload_str, qos=0, retain=False)
+        time.sleep(5)
 
-# The callback for when the client receives a CONNACK response from the server.
-def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    mqttc.loop_stop()
+    mqttc.disconnect()
 
-# Subscribing in on_connect() means that if we lose the connection and
-# reconnect then subscriptions will be renewed.
-    client.subscribe("babycradle")
-
-# The callback for when a PUBLISH message is received from the server.
-def on_message(client, userdata, msg):
-    #payload_hex = ''.join(format(str(x), '02x') for x in msg.payload)
-    payload_str = str(msg.payload)
-    console_str = datetime.datetime.now().strftime("%X") + "|" +msg.topic+ "|" +  payload_str[1:]
-    if sEtting.debug_enable:
-        print(console_str)
-
-    (sensor_data,device) = dEvices.add(str(payload_str[1:]))
-    if sensor_data:
-        if sEtting.log_enabled:
-            global data_log_file
-            if data_log_file==None:
-                data_log_file = open("lass_data_" + datetime.datetime.now().strftime("%Y%m%d") + ".log", 'w+')
-            data_log_file.write(console_str + "\n")
-
-            global data_file
-            if data_file==None:
-                data_file = open("lass_data_" + datetime.datetime.now().strftime("%Y%m%d") + ".raw", 'w+')
-            data_file.write(sensor_data.raw + "\n")
-
-        if sEtting.plot_enabled:
-            sensorPlot.plot(1)
-        (distance,is_move) = device.is_move()
-        if is_move:
-            print "%s is moving" %(device.id)
-
-if __name__ == '__main__':
-    gpsp = GpsPoller() # create the thread
+if __name__ == "__main__":
+    global sEtting
+    global gpsp
+    sEtting = Setting()
+    if sEtting.fake_gps == 0:
+        gpsp = GpsPoller()
     try:
-        gpsp.start() # start it up
-        client = mqtt.Client()
-        client.on_connect = on_connect
-        client.on_message = on_message
-        client.connect("180.76.179.148", 1883, 60)
-        #MQTT服务器地址，端口，KeepAlive时间
-        client.loop_forever()
-
+        gpsp.start()
+        main()
+    except (KeyboardInterrupt, SystemExit): #when you press ctrl+c
+        print "\nKilling Thread..."
+        gpsp.running = False
+        gpsp.join() # wait for the thread to finish what it's doing
+    print "Done.\nExiting."
