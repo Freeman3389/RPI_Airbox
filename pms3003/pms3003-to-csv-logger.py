@@ -130,7 +130,7 @@ class g3sensor():
             print "pm25: " + str(pm25)
         if debug:
             print "pm10: " + str(pm10)
-        data = [pm1_cf, pm10_cf, pm25_cf, pm1, pm10, pm25]
+        data = (pm1_cf, pm10_cf, pm25_cf, pm1, pm10, pm25)
         self.serial.close()
         return data
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
             write_pidfile()
             time.sleep(latest_log_interval)
         except IOError as ioer:
-            syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
+            syslog.syslog(syslog.LOG_INFO, ioer + " , wait 10 seconds to restart.")
             latest_reading_value = []
             time.sleep(10)
         except KeyboardInterrupt:

@@ -35,7 +35,7 @@
   "pms3003": {
     "status": "1",
     "sensor_name": "pms3003",
-    "serial_device": "/dev/ttyS0",
+    "serial_device": "/dev/ttyAMA0",
     "executable_path": "pms3003/pms3003-to-csv-logger.py",
     "latest_log_interval": "60",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n",
