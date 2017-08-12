@@ -36,8 +36,6 @@ pin = int(configs[sensor_name]['gpio_pin'])
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 
 # Initial variables
-global latest_reading_value
-latest_reading_value = []
 latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 sensor = Adafruit_DHT.AM2302
@@ -103,6 +101,7 @@ def write_hist_value(latest_value_datetime):
 def main():
     """Execute main function"""
     global latest_reading_value
+    latest_reading_value = ()
     syslog.syslog(syslog.LOG_INFO, "Ignoring first 2 sensor values to improve quality...")
     for x in range(2):
         Adafruit_DHT.read_retry(sensor, pin)

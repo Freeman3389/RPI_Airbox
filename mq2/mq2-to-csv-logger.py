@@ -30,8 +30,6 @@ pin = int(configs[sensor_name]['gpio_pin'])
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 
 # Initial variables
-global latest_reading_value
-latest_reading_value = []
 latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 
@@ -87,6 +85,7 @@ def write_hist_value(latest_value_datetime):
 def main():
     """Execute main function"""
     global latest_reading_value
+    latest_reading_value = ()
     try:
         syslog.syslog(syslog.LOG_INFO, "Get MQ2 Sensor Readings.")
 

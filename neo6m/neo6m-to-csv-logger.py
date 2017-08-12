@@ -30,8 +30,6 @@ csv_entry_format = configs[sensor_name]['csv_entry_format']
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 
 # Initial variables
-global latest_reading_value
-latest_reading_value = []
 latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 gpsd = None
@@ -82,7 +80,7 @@ def open_file_write_header(file_path, mode, csv_header):
     return f_csv
 
 
-def write_latest_value(latest_value_datetim):
+def write_latest_value(latest_value_datetime):
     """For while loop in main() to write latest value into latest csv file."""
     global latest_reading_value
     i = 0
@@ -116,6 +114,7 @@ def get_gps():
 def main():
     """Execute main function"""
     global latest_reading_value
+    latest_reading_value = ()
     try:
         def all_done():
             """Define atexit function"""

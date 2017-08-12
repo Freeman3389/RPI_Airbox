@@ -32,8 +32,6 @@ csv_entry_format = configs[sensor_name]['csv_entry_format']
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 serial_device = configs[sensor_name]['serial_device']
 # Initial variables
-global latest_reading_value
-latest_reading_value = []
 latest_value_datetime = None
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 debug = 0  # class g3sensor debug mode
@@ -212,6 +210,7 @@ if __name__ == '__main__':
     atexit.register(all_done)
     while True:
         global latest_reading_value
+        latest_reading_value = ()
         pmdata = 0
         try:
             pmdata = air.read(serial_device)

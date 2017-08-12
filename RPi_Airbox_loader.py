@@ -39,6 +39,7 @@ def check_proc_running(module, pid_file):
 def main():
     """Execute main function"""
     retry_count = 0
+    while retry_count < 10:
         syslog.openlog(sys.argv[0], syslog.LOG_PID)
         enabled_module_list = []
         disabled_module_list = []
