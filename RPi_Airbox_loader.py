@@ -9,7 +9,6 @@
 import sys, json, syslog, os, time, subprocess, psutil, pdb
 with open(os.path.dirname(os.path.abspath(__file__)) + '/settings.json') as json_handle:
     configs = json.load(json_handle)
-MAX_RETRY = 10
 
 def check_proc_running(module, pid_file):
     """check if enabled module running"""
@@ -40,7 +39,6 @@ def check_proc_running(module, pid_file):
 def main():
     """Execute main function"""
     retry_count = 0
-    while retry_count > MAX_RETRY:
         syslog.openlog(sys.argv[0], syslog.LOG_PID)
         enabled_module_list = []
         disabled_module_list = []
@@ -85,6 +83,7 @@ def main():
             retry_count += 1
             raise
         break
+
 
 if __name__ == "__main__":
     start_time = time.time()
