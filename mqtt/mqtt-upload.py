@@ -120,12 +120,13 @@ def data_process():
         value_dict["gps_alt"] = get_gps()[2]
         value_dict["gps_fix"] = gpsd.fix.mode
     value_dict["gps_num"] = 0
-    if debug_enable == '0':
-        msg = "|" + "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
-    elif debug_enable == '1':
-        msg = ",".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
-        print 'msg = ' + msg
+    #if debug_enable == '0':
+    msg = "|" + "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
     return msg
+    #elif debug_enable == '1':
+    #    msg_debug = ",".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
+    #    return msg_debug
+    
 
 def get_reading_csv(sensor):
     """Get sensor readings from latest value csv files in sensor-value folder."""
@@ -178,6 +179,8 @@ def main():
         while True:
             localtime = datetime.datetime.now()
             payload_str = data_process()
+            if sEtting.debug_enable == 1:
+                print payload_str
             #msg = json.JSONEncoder().encode(payload_str)
             (result, mid) = mqttc.publish(sEtting.mqtt_topic, payload_str, qos=0, retain=False)
             time.sleep(update_interval)
