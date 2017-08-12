@@ -24,13 +24,16 @@ def check_proc_running(module, pid_file):
         with open(pid_file) as f_pid:
             pid = int(f_pid.read().replace('\n', ''))
         if psutil.pid_exists(pid):
+            print module + ' is running, do nothing.'
             message_running.append(module + '(PID=' + str(pid) + ')')
             y += 1
         else:
+            print module + ' is not executing, try to load it.'
             subprocess.call(cmd_str, shell=True)
             message_load.append(module)
             z += 1
     else:
+        print module + ' is not executing, try to load it.'
         subprocess.call(cmd_str, shell=True)
         message_load.append(module)
         z += 1
@@ -57,14 +60,18 @@ def main():
 
         try:
             syslog.syslog(syslog.LOG_INFO, 'Begin to check RPi_Airbox enabled scripts.')
+            print 'Begin to check RPi_Airbox enabled scripts.'
             for module in configs['global']['loading_order']:
+                print 'Checking ' + module + ' settings...'
                 if int(configs.get(module).get('status')) == 1:
+                    print module + ' is enabled!'
                     pid_file = str(configs['global']['base_path']) + str(configs[module]['sensor_name']) + '.pid'
                     w += 1
                     enabled_module_list.append(module)
                     check_proc_running(module, pid_file)
                     time.sleep(5)
                 else:
+                    print module + ' is disabled!'
                     x += 1
                     disabled_module_list.append(module)
                     time.sleep(5)
@@ -82,7 +89,7 @@ def main():
             print "Unexpected error:", sys.exc_info()[0]
             time.sleep(60)
             retry_count += 1
-            raise
+            continue
         break
 
 

@@ -115,6 +115,7 @@
   "mqtt": {
     "status": "1",
     "debug_enable": "0",
+    "executable_path": "mqtt/mqtt-upload.py",
     "sensor_name": "mqtt",
     "mqtt_server": "gpssensor.ddns.net",
     "mqtt_port": "1883",
