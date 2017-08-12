@@ -50,7 +50,6 @@ def get_readings_parameters(reading, type):
 
 def write_value(file_handle, datetime, value):
     """Pass contents and datetime to write into target file."""
-    #pdb.set_trace()
     line = csv_entry_format.format(datetime, value)
     file_handle.write(line)
     file_handle.flush()
@@ -64,7 +63,7 @@ def open_file_write_header(file_path, mode, csv_header):
     return f_csv
 
 
-def write_latest_value(latest_value_datetim):
+def write_latest_value(latest_value_datetime):
     """For while loop in main() to write latest value into latest csv file."""
     global latest_reading_value
     i = 0
@@ -87,6 +86,7 @@ def write_hist_value(latest_value_datetime):
 
 def main():
     """Execute main function"""
+    global latest_reading_value
     try:
         syslog.syslog(syslog.LOG_INFO, "Get MQ2 Sensor Readings.")
 
@@ -107,7 +107,7 @@ def main():
         atexit.register(all_done)
         mq = MQ()
         while True:
-            latest_reading_value = list(mq.MQPercentage().values())
+            latest_reading_value = mq.MQPercentage().values()
             latest_value_datetime = datetime.today()
             write_latest_value(latest_value_datetime)
             if enable_history == 1:

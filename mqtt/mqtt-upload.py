@@ -35,6 +35,9 @@ latest_log_interval = int(configs[sensor_name]['update_interval'])
 mqtt_server = str(configs[sensor_name]['mqtt_server'])
 mqtt_port = int(configs[sensor_name]['mqtt_port'])
 mqtt_topic = str(configs[sensor_name]['mqtt_topic'])
+clientid = str(configs[sensor_name]['clientid'])
+username = str(configs[sensor_name]['username'])
+passwd = str(configs[sensor_name]['passwd'])
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 
 # Global variables intialization
@@ -52,11 +55,11 @@ class Setting:
         self.fgps_lon = fgps_lon
         self.fgps_lat = fgps_lat
         self.fgps_alt = fgps_alt
+        self.clientid = clientid
+        self.username = username
+        self.passwd = passwd
         self.app = "RPi_Airbox"
         self.device_id = self.app + '_' + format(get_mac(), 'x')[-6:]
-        self.clientid = "RPiAirboxYM_1502271751"
-        self.username = "e119d4cd-4b84-410f-b598-282ae59c9d2a"
-        self.passwd = "r:20dae1c1ab24b0f84ea5bfcbfd47e9b2"
         self.ver_format = 3 #Default 3,: filter parameter when filter_par_type=2
         self.ver_app = "0.8.3"
         self.device = "RaspberryPi_3"
@@ -138,9 +141,9 @@ def get_reading_csv(sensor):
 def get_gps():
     """check fix status of gpsd"""
     if gpsd.fix.mode == 1:
-        return sEtting.fgps_lat, sEtting.fgps_lon, sEtting.fgps_alt
+        return float(sEtting.fgps_lat), float(sEtting.fgps_lon), float(sEtting.fgps_alt)
     if gpsd.fix.mode == 2:
-        return gpsd.fix.latitude, gpsd.fix.longitude, sEtting.fgps_alt
+        return gpsd.fix.latitude, gpsd.fix.longitude, float(sEtting.fgps_alt)
     if gpsd.fix.mode == 3:
         return gpsd.fix.latitude, gpsd.fix.longitude, gpsd.fix.altitude
 

@@ -25,13 +25,14 @@ with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handl
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
-update_interval = int(configs['sh1106']['update_interval'])
-font_name = str(configs['sh1106']['font_name'])
-font_size = int(configs['sh1106']['font_size'])
-device_height = int(configs['sh1106']['device_height'])
-i2c_port = int(configs['sh1106']['i2c_port'])
-i2c_address = int(configs['sh1106']['i2c_address'], 16)
-pid_file = str(configs['global']['base_path']) + str(configs['sh1106']['sensor_name']) + '.pid'
+sensor_name = str(configs['sh1106']['sensor_name'])
+update_interval = int(configs[sensor_name]['update_interval'])
+font_name = str(configs[sensor_name]['font_name'])
+font_size = int(configs[sensor_name]['font_size'])
+device_height = int(configs[sensor_name]['device_height'])
+i2c_port = int(configs[sensor_name]['i2c_port'])
+i2c_address = int(configs[sensor_name]['i2c_address'], 16)
+pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 # initial variables
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 latest_reading_values = []

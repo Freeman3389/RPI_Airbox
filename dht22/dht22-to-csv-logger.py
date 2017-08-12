@@ -19,7 +19,6 @@ import logging
 import syslog
 import json
 import atexit
-# import pdb
 from datetime import datetime
 from array import *
 
@@ -80,7 +79,7 @@ def open_file_write_header(file_path, mode, csv_header):
     return f_csv
 
 
-def write_latest_value(latest_value_datetim):
+def write_latest_value(latest_value_datetime):
     """For while loop in main() to write latest value into latest csv file."""
     global latest_reading_value
     i = 0
@@ -103,6 +102,7 @@ def write_hist_value(latest_value_datetime):
 
 def main():
     """Execute main function"""
+    global latest_reading_value
     syslog.syslog(syslog.LOG_INFO, "Ignoring first 2 sensor values to improve quality...")
     for x in range(2):
         Adafruit_DHT.read_retry(sensor, pin)
@@ -121,7 +121,7 @@ def main():
 
         atexit.register(all_done)
         while True:
-            latest_reading_value = [get_sensor_readings(sensor, pin)]
+            latest_reading_value = get_sensor_readings(sensor, pin)
             latest_value_datetime = datetime.today()
             write_latest_value(latest_value_datetime)
             if enable_history == 1:

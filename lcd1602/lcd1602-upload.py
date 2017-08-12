@@ -16,8 +16,9 @@ with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handl
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
-update_interval = int(configs['lcd1602']['update_interval'])
-pid_file = str(configs['global']['base_path']) + str(configs['lcd1602']['sensor_name']) + '.pid'
+sensor_name = str(configs['neo6m']['sensor_name'])
+update_interval = int(configs[sensor_name]['update_interval'])
+pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 # initial variables
 mylcd = I2C_LCD_driver.lcd()
 syslog.openlog(sys.argv[0], syslog.LOG_PID)

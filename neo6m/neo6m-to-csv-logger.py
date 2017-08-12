@@ -14,7 +14,6 @@ import syslog
 import json
 import atexit
 from gps import *
-# from time import *
 from datetime import datetime
 from array import *
 
@@ -28,7 +27,6 @@ sensor_name = str(configs['neo6m']['sensor_name'])
 sensor_readings_list = configs[sensor_name]['sensor_readings_list']
 latest_log_interval = int(configs[sensor_name]['latest_log_interval'])
 csv_entry_format = configs[sensor_name]['csv_entry_format']
-pin = int(configs[sensor_name]['gpio_pin'])
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 
 # Initial variables
@@ -108,15 +106,16 @@ def write_hist_value(latest_value_datetime):
 def get_gps():
     """Check GPSD fix status"""
     if gpsd.fix.mode == 1:
-        return configs['global']['fgps_lat'], configs['global']['fgps_lon'], configs['global']['fgps_alt']
+        return float(configs['global']['fgps_lat']), float(configs['global']['fgps_lon']), float(configs['global']['fgps_alt'])
     if gpsd.fix.mode == 2:
-        return gpsd.fix.latitude, gpsd.fix.longitude, configs['global']['fgps_alt']
+        return gpsd.fix.latitude, gpsd.fix.longitude, float(configs['global']['fgps_alt'])
     if gpsd.fix.mode == 3:
         return gpsd.fix.latitude, gpsd.fix.longitude, gpsd.fix.altitude
 
 
 def main():
     """Execute main function"""
+    global latest_reading_value
     try:
         def all_done():
             """Define atexit function"""
@@ -135,7 +134,7 @@ def main():
         atexit.register(all_done)
         while True:
             # It may take a second or two to get good data
-            latest_reading_value = [get_gps()]
+            latest_reading_value = get_gps()
             latest_value_datetime = datetime.today()
             write_latest_value(latest_value_datetime)
             if enable_history == 1:

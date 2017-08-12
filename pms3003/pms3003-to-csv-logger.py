@@ -29,7 +29,6 @@ sensor_name = str(configs['pms3003']['sensor_name'])
 sensor_readings_list = configs[sensor_name]['sensor_readings_list']
 latest_log_interval = int(configs[sensor_name]['latest_log_interval'])
 csv_entry_format = configs[sensor_name]['csv_entry_format']
-pin = int(configs[sensor_name]['gpio_pin'])
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 serial_device = configs[sensor_name]['serial_device']
 # Initial variables
@@ -174,7 +173,7 @@ def open_file_write_header(file_path, mode, csv_header):
     return f
 
 
-def write_latest_value(latest_value_datetim):
+def write_latest_value(latest_value_datetime):
     """For while loop in main() to write latest value into latest csv file."""
     global latest_reading_value
     i = 0
@@ -212,11 +211,12 @@ if __name__ == '__main__':
 
     atexit.register(all_done)
     while True:
+        global latest_reading_value
         pmdata = 0
         try:
             pmdata = air.read(serial_device)
             if pmdata != 0:
-                latest_reading_value = [pmdata]
+                latest_reading_value = pmdata
                 latest_value_datetime = datetime.today()
                 write_latest_value(latest_value_datetime)
                 if enable_history == 1:

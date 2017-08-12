@@ -23,9 +23,10 @@ with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handl
     configs = json.load(json_handle)
 data_path = configs['global']['base_path'] + configs['global']['csv_path']
 sensor_location = configs['global']['sensor_location']
-update_interval = int(configs['thingspeak']['update_interval'])
-api_key = str(configs['thingspeak']['api_key'])
-pid_file = str(configs['global']['base_path']) + str(configs['thingspeak']['sensor_name']) + '.pid'
+sensor_name = str(configs['thingspeak']['sensor_name'])
+update_interval = int(configs[sensor_name]['update_interval'])
+api_key = str(configs[sensor_name]['api_key'])
+pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 # Initial variables
 sensors = ['temperature', 'humidity', 'pm1-at', 'pm25-at', 'pm10-at']  # Define all the sensor readings uploading to Thingspeak
 
