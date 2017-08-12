@@ -119,7 +119,7 @@
     "sensor_name": "mqtt",
     "mqtt_server": "gpssensor.ddns.net",
     "mqtt_port": "1883",
-    "mqtt_topic":"Developer/Test/",
+    "mqtt_topic":"Developer/Test",
     "update_interval": "1",
     "client_id": "[your id]",
     "username": "[your name]",

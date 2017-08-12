@@ -81,13 +81,13 @@ class GpsPoller(threading.Thread):
             gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
 
 
-def data_process(str_type):
+def data_process():
     """parse the data and form the related variables"""
     global localtime
     global value_dict
-    global sEtting
     sensor_types = sEtting.sensor_types
     sensor_values = []
+    msg = None
     value_dict = collections.OrderedDict.fromkeys(sEtting.payload_header)
     value_dict["ver_format"] = sEtting.ver_format
     value_dict["FAKE_GPS"] = sEtting.fake_gps
@@ -121,11 +121,11 @@ def data_process(str_type):
         value_dict["gps_fix"] = gpsd.fix.mode
     value_dict["gps_num"] = 0
     if debug_enable == '0':
-        payload_str = "|" + "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
+        msg = "|" + "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
     elif debug_enable == '1':
-        payload_str = ",".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
-        print 'payload_str = ' + payload_str
-    return payload_str
+        msg = ",".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
+        print 'msg = ' + msg
+    return msg
 
 def get_reading_csv(sensor):
     """Get sensor readings from latest value csv files in sensor-value folder."""
@@ -150,6 +150,7 @@ def get_gps():
 
 def main():
     """Execute main function"""
+
     try:
         global localtime
         global value_dict
@@ -176,7 +177,7 @@ def main():
         mqttc.loop_start()
         while True:
             localtime = datetime.datetime.now()
-            payload_str = data_process('raw')
+            payload_str = data_process()
             #msg = json.JSONEncoder().encode(payload_str)
             (result, mid) = mqttc.publish(sEtting.mqtt_topic, payload_str, qos=0, retain=False)
             time.sleep(update_interval)
@@ -193,7 +194,6 @@ def main():
 
 
 if __name__ == '__main__':
-    global sEtting
     global gpsp
     sEtting = Setting()
     if sEtting.fake_gps == 0:
