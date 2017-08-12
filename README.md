@@ -129,9 +129,6 @@ and know which ADC channel that you connect to MQ2 Analog pin.
 **i) Make sure necessary python modules had been installed.**
 ```
 $ sudo -HE pip install spidev
-$ sudo -HE pip install apscheduler
-$ sudo -HE pip install setuptools
-$ sudo -HE pip install tzlocal
 ```
 
 **ii) Check setting.json settings**
@@ -283,12 +280,21 @@ $ tail -f /var/log/syslog | grep snmp
 **i) Check setting.json settings**
 - Make sure *status* of *thingspeak* is *1*
 - Modify *api_key* settings in settings.json
+**2) Modify channel content if necessary**
+
 
 ## 10. Set up MQTT upload module
 **i) install necessary module**
 ```
-pip -E install ppaho-mqtt
+sudo -HE pip install ppaho-mqtt
 ```
+**2) Check Module settings in settings.json**
+- "status" => "1"
+- "debug-enable" => "0"     # Not ready yet
+- "client_id"               # Preserve for Node-Red MQTT, not ready yet.
+- "username"                # Preserve for Node-Red MQTT, not ready yet.
+- "passwd"                  # Preserve for Node-Red MQTT, not ready yet.
+
 
 ## 10. Set up Monitor Web module
 Not ready yet

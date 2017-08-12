@@ -12,7 +12,6 @@ import os
 import json
 import csv
 import collections
-import pdb
 import syslog
 import atexit
 import paho.mqtt.client as mqtt
