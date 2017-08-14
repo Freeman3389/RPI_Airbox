@@ -26,7 +26,6 @@ sensor_name = str(configs['mq2']['sensor_name'])
 sensor_readings_list = configs[sensor_name]['sensor_readings_list']
 latest_log_interval = int(configs[sensor_name]['latest_log_interval'])
 csv_entry_format = configs[sensor_name]['csv_entry_format']
-pin = int(configs[sensor_name]['gpio_pin'])
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 
 # Initial variables
