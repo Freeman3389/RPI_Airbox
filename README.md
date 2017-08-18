@@ -286,7 +286,7 @@ $ tail -f /var/log/syslog | grep snmp
 ## 10. Set up MQTT upload module
 **i) install necessary module**
 ```
-sudo -HE pip install ppaho-mqtt
+sudo -HE pip install paho-mqtt
 ```
 **2) Check Module settings in settings.json**
 - "status" => "1"
