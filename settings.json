@@ -121,7 +121,7 @@
     "mqtt_port": "1883",
     "mqtt_topic":"LASS/Test/RPi_Airbox",
     "update_interval": "60",
-    "client_id": "[your id]",
+    "client_id": "RPiAirbox_[your mac last 6 digits]",
     "username": "[your name]",
     "passwd": "[your password]"
   }

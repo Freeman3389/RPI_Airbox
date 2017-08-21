@@ -116,7 +116,7 @@ def main():
             time.sleep(latest_log_interval)
 
     except IOError as ioer:
-        syslog.syslog(syslog.LOG_WARNING, ioer + " , wait 10 seconds to restart.")
+        syslog.syslog(syslog.LOG_WARNING, str(ioer) + " , wait 10 seconds to restart.")
         latest_reading_value = []
         time.sleep(10)
 

@@ -49,21 +49,45 @@ Let rpisensor execute python script without any prompt of sudo password.
 rpisensor       ALL=(ALL) NOPASSWD: /usr/bin/python
 ```
 
-**ix) Install some necessary tools onto Raspberry Pi.**
+**ix) Connect your Raspberry Pi into network and check Internet connection.**
+You can do this through its LAN port or wifi module.
+It can obtain IP address through DHCP automatically, if you connect by LAN port.
+However, if you choose wifi, you neen some extra works.
+First of all, you must know every details of your wifi network.
+
 ```
-$ sudo apt-get update
-$ sudo apt-get install -y build-essential python-dev python-pip ntpdate git
-$ sudo -HE pip install --upgrade pip
-$ sudo -HE pip install psutil
+$ iwconfig wlan0                                        # Check RPi wifi module
+$ sudo iwlist wlan0 scan                                # Scan available wifi SSIDs
+$ sudo nano /etc/wpa_supplicant/wpa_supplicant.conf     # Modiy RPi wifi config
+```
+Modify the wifi configuration file and add below lines.
+```
+network={
+        ssid="foo"                  # Input your wifi SSID            
+        psk="1234567890123"         # Your wifi pre-shared key  
+        proto=RSN                   # Security mode - RSN => WPA2; WPA => WPA (default: "WAP RSN")
+        key_mgmt=WPA-PSK            # WPA authentication - PSK => Pre-Shared Key; EAP => for AAA server ; None => plaintext or WEP (default: "WPA-PSK WPA-EAP")
+        pairwise=CCMP               # AES pairwise - CCMP => AES, WPA2; TKIP => TKIP, WPA (default: "CCMP TKIP")
+        auth_alg=OPEN               # 802.11 authentication algorithms - OPEN => WPA/WPA2; LEAP => LEAP/Network EAP, )
+}
 ```
 
-**x) If you need to access Internet through proxy, please consider to configure following settings.**
+If you need to access Internet through proxy, please consider to configure following settings
 ```
 - apt-get => /etc/apt/apt.conf.d
 - git => sudo git config --global http.proxy [your proxy]
          sudo git config --global https.proxy [your proxy]
 - pip => export https_proxy=[your proxy]
 sudo -E pip install [module]
+```
+
+**x) Install some necessary tools onto Raspberry Pi.**
+input following command to do this.
+```
+$ sudo apt-get update
+$ sudo apt-get install -y build-essential python-dev python-pip ntpdate git
+$ sudo -HE pip install --upgrade pip
+$ sudo -HE pip install psutil
 ```
 
 **xi) Get RPi_Airbox repository from Github**
@@ -290,10 +314,10 @@ sudo -HE pip install paho-mqtt
 ```
 **2) Check Module settings in settings.json**
 - "status" => "1"
-- "debug-enable" => "0"     # Not ready yet
-- "client_id"               # Preserve for Node-Red MQTT, not ready yet.
-- "username"                # Preserve for Node-Red MQTT, not ready yet.
-- "passwd"                  # Preserve for Node-Red MQTT, not ready yet.
+- "debug-enable" => "0"                                                  # Not ready yet
+- "client_id" => "RPiAirbox_[last 6 digits of your MAC address]          # 
+- "username"                                                             # Preserve for Node-Red MQTT, not ready yet.
+- "passwd"                                                               # Preserve for Node-Red MQTT, not ready yet.
 
 
 ## 10. Set up Monitor Web module
