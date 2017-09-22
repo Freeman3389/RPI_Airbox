@@ -21,7 +21,7 @@
     ]
   },
   "neo6m": {
-    "status": "1",
+    "status": "0",
     "sensor_name": "neo6m",
     "executable_path": "neo6m/neo6m-to-csv-logger.py",
     "latest_log_interval": "120",
@@ -33,7 +33,7 @@
     ]
   },
   "pms3003": {
-    "status": "1",
+    "status": "0",
     "sensor_name": "pms3003",
     "serial_device": "/dev/ttyAMA0",
     "executable_path": "pms3003/pms3003-to-csv-logger.py",
@@ -63,7 +63,7 @@
     ]
   },
     "mq2": {
-    "status": "0",
+    "status": "1",
     "sensor_name": "mq2",
     "mq_channel": "0",
     "executable_path": "mq2/mq2-to-csv-logger.py",
@@ -76,7 +76,7 @@
     ]
   },
   "lcd1602": {
-    "status": "1",
+    "status": "0",
     "sensor_name": "lcd1602",
     "i2c_bus": "1",
     "i2c_address": "0x3f",
@@ -91,23 +91,20 @@
     "sensor_readings_list": [
       "humidity", 
       "temperature",
-      "pm1-at",
-      "pm10-at",
-      "pm25-at",
-      "latitude",
-      "longitude",
-      "altitude"
+      "GAS-LPG", 
+      "CO",
+      "Smoke"
     ]
   },
   "thingspeak": {
-    "status": "1",
+    "status": "0",
     "sensor_name": "thingspeak",
     "api_key": "[your api key]",
     "executable_path": "thingspeak/thingspeak-upload.py",
     "update_interval": "300"
   },
   "sh1106": {
-    "status": "0",
+    "status": "1",
     "sensor_name": "sh1106",
     "i2c_port": "1",
     "i2c_address": "0x3C",
@@ -118,7 +115,7 @@
     "update_interval": "1"
   },
   "mqtt": {
-    "status": "1",
+    "status": "0",
     "debug_enable": "0",
     "executable_path": "mqtt/mqtt-upload.py",
     "sensor_name": "mqtt",

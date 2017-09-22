@@ -2,27 +2,27 @@
 
 ## 1. Initialization your Raspberry Pi (a.k.a RPi)
 
-**i) Download Raspbian Jessie from official site**
+### i) Download Raspbian Jessie from official site
 (https://www.raspberrypi.org/downloads/raspbian/)
 
-**ii) Download ImageWriter**
+### ii) Download ImageWriter
 (https://sourceforge.net/projects/win32diskimager/)
 
-**iii) Write Raspbian Jessie image to MicroSD by ImageWriter**
+### iii) Write Raspbian Jessie image to MicroSD by ImageWriter
 
-**iv) Mount MicroSD /boot partition in Windows/MAC/Linux** 
+### iv) Mount MicroSD /boot partition in Windows/MAC/Linux
 Add following lines after the last line of *config.sts* to activate UART port of Raspberry Pi 3.
 ```
 dtoverlay=pi3-disable-bt
 enable_uart=1
 ```
 
-**v) Connect USB-to-TTL cable to Raspberry.**
+### v) Connect USB-to-TTL cable to Raspberry.
 - Black(GND) => Pin 6
 - White(UART Rx) => Pin 8
 - Green(UART Tx) => Pin 10
 
-**vi) Login Raspberry Pi by default account (pi/raspberry)**
+### vi) Login Raspberry Pi by default account (pi/raspberry)
 ```
 $ sudo raspi-config
 ```
@@ -32,7 +32,7 @@ $ sudo raspi-config
 - Interfacing Options => SSH, SPI, I2C, Serial should be enabled
 ![Interfacing Options](Docs/interfasing.png)
 
-**vii) Create a system account - rpisensor** 
+### vii) Create a system account - rpisensor
 input following command to create rpisensor for execution of RPi_Airbox programs.
 ```
 $ sudo useradd -r rpisensor
@@ -40,7 +40,7 @@ $ sudo mkhomedir_helper rpisensor
 $ sudo usermod -aG dialout,gpio,i2c,spi rpisensor
 ```
 
-**viii) Modify /etc/sudoers**
+### viii) Modify /etc/sudoers
 ```
 $ sudo nano /etc/sudoers
 ```
@@ -50,7 +50,7 @@ rpisensor       ALL=(ALL) NOPASSWD: /usr/bin/python
 ```
 ![/etc/sudoers](Docs/sudoers.png)
 
-**ix) Connect your Raspberry Pi into network and check Internet connection.**
+### ix) Connect your Raspberry Pi into network and check Internet connection.
 You can do this through its LAN port or wifi module.
 It can obtain IP address through DHCP automatically, if you connect by LAN port.
 However, if you choose wifi, you neen some extra works.
@@ -82,7 +82,7 @@ If you need to access Internet through proxy, please consider to configure follo
 sudo -E pip install [module]
 ```
 
-**x) Install some necessary tools onto Raspberry Pi.**
+### x) Install some necessary tools onto Raspberry Pi.
 input following command to do this.
 ```
 $ sudo apt-get update
@@ -91,13 +91,48 @@ $ sudo -HE pip install --upgrade pip
 $ sudo -HE pip install psutil
 ```
 
-**xi) Get RPi_Airbox repository from Github**
+### xi) Get RPi_Airbox repository from Github
 ```
 $ cd /opt
 $ sudo git clone https://github.com/Freeman3389/RPi_Airbox.git
 ```
+### xii) Circuit diagram
+Here is the Raspberry Pi 3 GPIO numbering diagram.
+![RPi GPIO Numbering](http://data.designspark.info/uploads/images/53bc258dc6c0425cb44870b50ab30621)
 
-**xii)  Check setting.json settings**
+
+You can refer to the circuit diagram below to assemble your own RPi_Airbox.
+#### Sample Circuit Diagram - Type I 
+- Display: SH1106(i2c)
+- Sensor: MQ2 Smoke (via ADC), DHT22 Temp/Humi(GPIO)
+- Output: snmp-passresist
+Sample config file - **settings.json.type1**
+![Diagram1](Docs/RPi_Airbox_Type1_DHT22_MQ2_SH1106_bb.png)
+
+#### Sample Circuit Diagram - Type II 
+- Display: LCD1602(i2c)
+- Sensor: DHT22 Temp/Humi(GPIO), Neo6m GPS(UART), PMS3003 PM 2.5(UART)
+- Output: snmp-passresit, MQTT, thingspeaks
+Sample config file - **settings.json**
+![Diagram1](Docs/RPi_Airbox_Type2_DHT22_PMS3003_NEO6M_bb.png)
+
+
+### xiii) Create monitor_web\sensor_values directory to store data
+```
+$ sudo mkdir /opt/RPi_Airbox/monitor_web/sensor_values
+```
+
+### xiv) Sync time with NTP server (if possible)
+```
+$ sudo systemctl stop ntp
+$ sudo ntpdate [your NTP server]
+```
+
+### xv) Disable Bluetooth module for speeding up UART port
+```
+sudo systemctl disable hciuart
+```
+### xii) Check setting.json settings
 ```
 $ sudo nano /opt/RPi_Airbox/settings.json
 ```
@@ -106,41 +141,18 @@ Check settings of each model.
 If you have the specific module in your RPi box, 
 make sure the *status* set to *1* to let loader.py bring it up.
 
-![RPi GPIO Numbering](http://data.designspark.info/uploads/images/53bc258dc6c0425cb44870b50ab30621)
-
-**xiii) Create monitor_web\sensor_values directory to store data**
-```
-$ sudo mkdir /opt/RPi_Airbox/monitor_web/sensor_values
-```
-
-**xiv) Sync time with NTP server (if possible)**
-```
-$ sudo systemctl stop ntp
-$ sudo ntpdate [your NTP server]
-```
-
-**xv) Disable Bluetooth module for speeding up UART port**
-```
-sudo systemctl disable hciuart
-```
-
-**xv) Circuit diagram**
-- Sample Circuit Diagram I (Display - SH1106, Sensor: MQ2 Smoke, DHT22 Temp/Humi)
-![Diagram1](Docs/RPi_Airbox_Type1_DHT22_MQ2_SH1106_bb.png)
-- Sample Circuit Diagram II (Display - LCD1602, Sensor: DHT22 Temp/Humi, Neo6m GPS, PMS3003 PM 2.5)
-![Diagram1](Docs/RPi_Airbox_Type2_DHT22_PMS3003_NEO6M_bb.png)
 
 
 ## 2. Set up DHT22 temperature and humidity sensor (GPIO)
 Before this part, you have to connect DHT22 sensor to your RPi correctly, 
 and know what GPIO Pin that you connect to DHT22 data pin.
 
-**i) Change to /opt/RPi_Airbox/dht22 directory**
+### i) Change to /opt/RPi_Airbox/dht22 directory
 ```
 & cd /opt/RPi_Airbox/dht22
 ```
 
-**ii) Download DHT22 library from Github and install it.**
+### ii) Download DHT22 library from Github and install it
 ```
 $ sudo git clone https://github.com/adafruit/Adafruit_Python_DHT.git
 $ cd Adafruit_Python_DHT
@@ -150,7 +162,7 @@ $ sudo python setup.py install
 After this, you can do a simple test by input *"examples/AdafruitDHT.py 2302 [GPIO Pin #]"*.
 If you can see output like *"Temp=26.3*  *Humidity=44.1%"*, your DHT22 should work.
 
-**iii) Check setting.json settings**
+### iii) Check setting.json settings
 - Modify settings.json. The *gpio_pin* should base on your wiring
 - Make sure *status* of *dht22* is *1*
 
@@ -159,17 +171,17 @@ Before this part, you have to connect MQ2 sensor to your RPi correctly,
 and know which ADC channel that you connect to MQ2 Analog pin.
 (https://tutorials-raspberrypi.com/configure-and-read-out-the-raspberry-pi-gas-sensor-mq-x/)
 
-**i) Make sure necessary python modules had been installed.**
+### i) Make sure necessary python modules had been installed.
 ```
 $ sudo -HE pip install spidev
 ```
 ![MCP3008 ADC Pin](https://cdn-learn.adafruit.com/assets/assets/000/030/456/original/sensors_raspberry_pi_mcp3008pin.gif?1455010861)
 
-**ii) Check setting.json settings**
+### ii) Check setting.json settings
 - *mq_channel* settings of *mq2* in settings.json
 - Make sure *status* of "mq2" is *1*.
 
-**iii) Input following command to check if MQ2 is working.**
+### iii) Input following command to check if MQ2 is working.
 ```
 $ sudo python /opt/RPi_Airbox/mq2/example.py
 ```
@@ -177,27 +189,27 @@ Wait 5 minutes if no error message.
 If you can see the value in console, your MQ2 is ready to work.
 
 ## 4. Set up Plantower PMS3003 PMx sensor (UART)
-**i) Check UART device settings**
+### i) Check UART device settings
 Check possible serial port device name from output of command below.
 ```
 $ dmesg | grep tty 
 ```
 By default, it should be */dev/ttyAMA0* or */dev/ttyS0*.
-**ii) Check setting.json settings**
+### ii) Check setting.json settings
 Check *serial_device* of *pms3003* settings in settings.json and "status" should be "1".
 
 ## 5. Set up ublox Neo6m GPS receiver (UART to USB)
-**i) Check USB device settings**
+### i) Check USB device settings
 ```
 $ lsusb                             # confirm PL2302 connectivity
 $ ls /dev/ttyUSB* 						      # Make sure correct device name of USB
 $ sudo cat /dev/ttyUSB0					    # Make sure the connection of GPS module had been established
 ```
-**ii) Install necessary packages**
+### ii) Install necessary packages
 ```
 $ sudo apt-get install -y gpsd gpsd-clients  # Install gpsd & client
 ```
-**iii) Install necessary modules**
+### iii) Install necessary modules
 ```
 $ sudo nano /etc/default/gpsd				#Modify necessafy settings
 ```
@@ -207,14 +219,14 @@ DEVICES="/dev/ttyUSB0"              # Depend on the USB device name
 GPSD_OPTIONS="-n"
 GPSD_SOCKET=”/var/run/gpsd.sock”
 ```
-**iv) Fix Raspbian Jessie systemd service default settings**
+### iv) Fix Raspbian Jessie systemd service default settings
 ```
 $ sudo systemctl stop gpsd.socket
 $ sudo systemctl disable gpsd.socket
 $ sudo systemctl enable gpsd.socket
 $ sudo systemctl start gpsd.socket
 ```
-**v) Test gpsd**
+### v) Test gpsd
 ```
 $ sudo gpsd /dev/ttyUSB0 -F /var/run/gpsd.sock
 $ cgps -s
@@ -225,11 +237,11 @@ If you always see 'NO FIX' in cgps, but gpsmon can get your location,
 try to fix this issue by the following website.
 (http://wiki.dragino.com/index.php?title=Getting_GPS_to_work_on_Raspberry_Pi_3_Model_B)
 
-**vi) Check setting.json settings**
+### vi) Check setting.json settings
 Make sure *status* of *neo6m* is *1*.
 
 ## 6. Set up LCD1602 (I2C) screen
-**i) Install necessary packages**
+### i) Install necessary packages
 ```
 $ sudo apt-get install -y python-smbus i2c-tools
 ```
@@ -237,7 +249,7 @@ after wiring, use command below to check I2C address of LCD1602
 ```
 $ i2cdetect -y 1
 ```
-**ii) Check setting.json settings**
+### ii) Check setting.json settings
 - Make sure *status* of *lcd1602* is *1*.
 - Check *i2c_bus* and *i2c_address* settings in settings.json
 
@@ -248,7 +260,7 @@ Because sh1106-upload.py will get the sensor values from the latest csv files fr
 it should not work before those csv files presented.
 ![IOError](Docs/File_not_found.png)
 
-**i) Install necessary module**
+### i) Install necessary module
 ```
 $ sudo apt-get install -y i2c-tools python-smbus libfreetype6-dev libjpeg-dev
 $ sudo -HE pip install --upgrade pip
@@ -264,7 +276,7 @@ $ i2cdetect -y 1
 ```
 ![i2cdetect](Docs/i2cdetect.png)
 
-**ii) Base on the result of detection, modify SSH1106 settings in settings.json.**
+### ii) Base on the result of detection, modify SSH1106 settings in settings.json.
 - "i2c_port" => "1"  (Unless, your RPi is very old model, and you can try "0")
 - "i2c_address" => "[SH1106 address]"
 - "device_height" => "64" (By default, but you still have to check your specs)
@@ -274,13 +286,13 @@ $ i2cdetect -y 1
 Because sh1106-upload.py will get the sensor values from the latest csv files from other sensors, it should not work before those csv files presented.
 **Please DONT set its "status" to "1" in settings.json.**
 
-**i) Install necessary module**
+### i) Install necessary module
 ```
 $ sudo -HE pip install snmp-passpersist
 $ sudo apt-get install -y snmpd
 ```
 
-**ii) modify /etc/snmp/snmpd.conf**
+### ii) modify /etc/snmp/snmpd.conf
 If you have no idea how to modify it, you can refer to the snmpd.conf inside snmp-passpersist directory.
 However, you have to modify following settings of it according to your network.
 ```
@@ -294,14 +306,15 @@ pass_persist .1.3.6.1.4.1.16813.1 /usr/bin/python -u /opt/RPi_Airbox/snmp-passpe
 
 ```
 
-**iii) modify *"sensor-readings-list"* array of *"snmp-passpersist"* settings in settings.json according to your sensors.**
+### iii) modify settings.json according to your sensors
+Check each element of *"sensor-readings-list"* array in *"snmp-passpersist"* sections.
 
-**iv) Add system account - snmp to rpisensor group**
+### iv) Add system account - snmp to rpisensor group
 ```
 $ sudo usermod -aG snmp rpisensor
 ```
 
-**v) Restart snmpd by following command**
+### v) Restart snmpd by following command
 ```
 $ sudo service snmpd restart
 ```
@@ -313,18 +326,18 @@ $ tail -f /var/log/syslog | grep snmp
 ```
 
 ## 9. Set up Thingspeak upload module
-**i) Check setting.json settings**
+### i) Check setting.json settings
 - Make sure *status* of *thingspeak* is *1*
 - Modify *api_key* settings in settings.json
-**2) Modify channel content if necessary**
+### ii) Modify channel content if necessary
 
 
 ## 10. Set up MQTT upload module
-**i) install necessary module**
+### i) install necessary module
 ```
 sudo -HE pip install paho-mqtt
 ```
-**2) Check Module settings in settings.json**
+### ii) Check Module settings in settings.json
 - "status" => "1"
 - "debug-enable" => "0"                                                  # Not ready yet
 - "client_id" => "RPiAirbox_[last 6 digits of your MAC address]          # 
@@ -335,14 +348,14 @@ sudo -HE pip install paho-mqtt
 ## 10. Set up Monitor Web module
 Not ready yet
 
-## 12. Set up automatical execution programs after reboot.
+## 11. Set up automatical execution programs after reboot.
 
-**i) Make sure the owner of "/opt/RPi_Airbox" is rpisensor**
+### i) Make sure the owner of "/opt/RPi_Airbox" is rpisensor
 ```
 $ sudo chown -R rpisensor:rpisensor /opt/RPi_Airbox
 ```
 
-**ii) Try to bring all modules on by manually execute loader**
+### ii) Try to bring all modules on by manually execute loader
 ```
 $ cd /opt/RPi_Airbox
 $ /usr/bin/sudo /usr/bin/python /opt/RPi_Airbox/RPi_Airbox_loader.py
@@ -359,25 +372,22 @@ RPi_Airbox_loader.py execution time =    46.0970 Secs
 ```
 ![loader](Docs/loader_result.png)
 
-**iii) Modify /etc/rc.local to let everything start after each reboot.**
+### iii) Modify /etc/rc.local to let everything start after each reboot.
 ```
 $ sudo nano /etc/rc.local
 ```
 Add these 3 lines below into rc.local before *"exit 0"*
 ```
 /usr/bin/sudo /usr/bin/python /opt/RPi_Airbox/RPi_Airbox_loader.py >/dev/null 2>&1
-/usr/bin/sudo ntpdate -s [your NTP server] >/dev/null 2>&1
 ```
 
-**iv) Create a scheduled task to check all scripts are running every hour.**
+### iv) Create a scheduled task to check all scripts are running every hour.
 ```
 $ sudo crontab -e
 ```
 Add following 2 lines into crontab, and it will execute the RPi_Airbox_loader.py every hour at 30 minutes, 
-also sync time with NTP on the hour.
 ```
 30 * * * * /usr/bin/sudo /usr/bin/python /opt/RPi_Airbox/RPi_Airbox_loader.py >/dev/null 2>&1
-0 * * * * /usr/bin/sudo ntpdate -s [your ntp server] >/dev/null 2>&1
 ```
 
 ## Done!
