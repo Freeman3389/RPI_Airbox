@@ -55,6 +55,8 @@
     "executable_path": "dht22/dht22-to-csv-logger.py",
     "latest_log_interval": "60",
     "csv_entry_format": "{:%Y-%m-%d %H:%M:%S},{:0.1f}\n",
+    "humidity_offset": "0.0",
+    "temperature_offset": "0.0",
     "sensor_readings_list": [
       "humidity",
       "temperature"

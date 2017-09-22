@@ -21,6 +21,7 @@ import json
 import atexit
 from datetime import datetime
 from array import *
+from operator import add
 
 # Get settings from 'settings.json'
 with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handle:
@@ -32,6 +33,8 @@ sensor_name = str(configs['dht22']['sensor_name'])
 sensor_readings_list = configs[sensor_name]['sensor_readings_list']
 latest_log_interval = int(configs[sensor_name]['latest_log_interval'])
 csv_entry_format = configs[sensor_name]['csv_entry_format']
+humidity_offset = float(configs[sensor_name]['humidity_offset'])
+temperature_offset = float(configs[sensor_name]['temperature_offset'])
 pin = int(configs[sensor_name]['gpio_pin'])
 pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 
@@ -120,7 +123,8 @@ def main():
 
         atexit.register(all_done)
         while True:
-            latest_reading_value = get_sensor_readings(sensor, pin)
+            readings_offset = tuple(humidity_offset, temperature_offset)
+            latest_reading_value = tuple(map(add, get_sensor_readings(sensor, pin), readings_offset))
             latest_value_datetime = datetime.today()
             write_latest_value(latest_value_datetime)
             if enable_history == 1:
