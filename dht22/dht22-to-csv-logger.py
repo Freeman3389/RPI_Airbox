@@ -123,7 +123,7 @@ def main():
 
         atexit.register(all_done)
         while True:
-            readings_offset = tuple(humidity_offset, temperature_offset)
+            readings_offset = (humidity_offset, temperature_offset)
             latest_reading_value = tuple(map(add, get_sensor_readings(sensor, pin), readings_offset))
             latest_value_datetime = datetime.today()
             write_latest_value(latest_value_datetime)
