@@ -61,3 +61,7 @@ target/
 
 # pid files
 *.pid
+
+# Documents
+Docs/
+*.md
