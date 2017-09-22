@@ -30,7 +30,7 @@ $ sudo raspi-config
 - Hostname => Modify as what you want
 - Localisation Options => Change Timezone => To where you live
 - Interfacing Options => SSH, SPI, I2C, Serial should be enabled
-![Interfacing Options](Docs\interfasing.png)
+![Interfacing Options](Docs/interfasing.png)
 
 **vii) Create a system account - rpisensor** 
 input following command to create rpisensor for execution of RPi_Airbox programs.
@@ -48,7 +48,7 @@ Let rpisensor execute python script without any prompt of sudo password.
 ```
 rpisensor       ALL=(ALL) NOPASSWD: /usr/bin/python
 ```
-![/etc/sudoers](Docs\sudoers.png)
+![/etc/sudoers](Docs/sudoers.png)
 
 **ix) Connect your Raspberry Pi into network and check Internet connection.**
 You can do this through its LAN port or wifi module.
@@ -126,9 +126,9 @@ sudo systemctl disable hciuart
 
 **xv) Circuit diagram**
 - Sample Circuit Diagram I (Display - SH1106, Sensor: MQ2 Smoke, DHT22 Temp/Humi)
-![Diagram1](Docs\RPi_Airbox_Type1_DHT22_MQ2_SH1106_bb.png)
+![Diagram1](Docs/RPi_Airbox_Type1_DHT22_MQ2_SH1106_bb.png)
 - Sample Circuit Diagram II (Display - LCD1602, Sensor: DHT22 Temp/Humi, Neo6m GPS, PMS3003 PM 2.5)
-![Diagram1](Docs\RPi_Airbox_Type2_DHT22_PMS3003_NEO6M_bb.png)
+![Diagram1](Docs/RPi_Airbox_Type2_DHT22_PMS3003_NEO6M_bb.png)
 
 
 ## 2. Set up DHT22 temperature and humidity sensor (GPIO)
@@ -357,7 +357,7 @@ Running Modules -
 Loading Modules - sh1106, mq2, dht22
 RPi_Airbox_loader.py execution time =    46.0970 Secs
 ```
-![loader](Docs\loader_result.png)
+![loader](Docs/loader_result.png)
 
 **iii) Modify /etc/rc.local to let everything start after each reboot.**
 ```
