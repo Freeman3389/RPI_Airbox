@@ -17,7 +17,6 @@ dtoverlay=pi3-disable-bt
 enable_uart=1
 ```
 
-
 **v) Connect USB-to-TTL cable to Raspberry.**
 - Black(GND) => Pin 6
 - White(UART Rx) => Pin 8
@@ -31,6 +30,7 @@ $ sudo raspi-config
 - Hostname => Modify as what you want
 - Localisation Options => Change Timezone => To where you live
 - Interfacing Options => SSH, SPI, I2C, Serial should be enabled
+![Interfacing Options](Docs\interfasing.png)
 
 **vii) Create a system account - rpisensor** 
 input following command to create rpisensor for execution of RPi_Airbox programs.
@@ -48,6 +48,7 @@ Let rpisensor execute python script without any prompt of sudo password.
 ```
 rpisensor       ALL=(ALL) NOPASSWD: /usr/bin/python
 ```
+![/etc/sudoers](Docs\sudoers.png)
 
 **ix) Connect your Raspberry Pi into network and check Internet connection.**
 You can do this through its LAN port or wifi module.
@@ -105,6 +106,8 @@ Check settings of each model.
 If you have the specific module in your RPi box, 
 make sure the *status* set to *1* to let loader.py bring it up.
 
+![RPi GPIO Numbering](http://data.designspark.info/uploads/images/53bc258dc6c0425cb44870b50ab30621)
+
 **xiii) Create monitor_web\sensor_values directory to store data**
 ```
 $ sudo mkdir /opt/RPi_Airbox/monitor_web/sensor_values
@@ -120,6 +123,12 @@ $ sudo ntpdate [your NTP server]
 ```
 sudo systemctl disable hciuart
 ```
+
+**xv) Circuit diagram**
+- Sample Circuit Diagram I (Display - SH1106, Sensor: MQ2 Smoke, DHT22 Temp/Humi)
+![Diagram1](Docs\RPi_Airbox_Type1_DHT22_MQ2_SH1106_bb.png)
+- Sample Circuit Diagram II (Display - LCD1602, Sensor: DHT22 Temp/Humi, Neo6m GPS, PMS3003 PM 2.5)
+![Diagram1](Docs\RPi_Airbox_Type2_DHT22_PMS3003_NEO6M_bb.png)
 
 
 ## 2. Set up DHT22 temperature and humidity sensor (GPIO)
@@ -154,6 +163,7 @@ and know which ADC channel that you connect to MQ2 Analog pin.
 ```
 $ sudo -HE pip install spidev
 ```
+![MCP3008 ADC Pin](https://cdn-learn.adafruit.com/assets/assets/000/030/456/original/sensors_raspberry_pi_mcp3008pin.gif?1455010861)
 
 **ii) Check setting.json settings**
 - *mq_channel* settings of *mq2* in settings.json
@@ -236,6 +246,7 @@ Before this part, you have to connect SH1106 screen to your RPi correctly.
 (https://luma-oled.readthedocs.io/en/latest/)
 Because sh1106-upload.py will get the sensor values from the latest csv files from other sensors, 
 it should not work before those csv files presented.
+![IOError](Docs/File_not_found.png)
 
 **i) Install necessary module**
 ```
@@ -251,6 +262,7 @@ The last number in the command is the i2c port number.
 ```
 $ i2cdetect -y 1
 ```
+![i2cdetect](Docs/i2cdetect.png)
 
 **ii) Base on the result of detection, modify SSH1106 settings in settings.json.**
 - "i2c_port" => "1"  (Unless, your RPi is very old model, and you can try "0")
@@ -345,6 +357,7 @@ Running Modules -
 Loading Modules - sh1106, mq2, dht22
 RPi_Airbox_loader.py execution time =    46.0970 Secs
 ```
+![loader](Docs\loader_result.png)
 
 **iii) Modify /etc/rc.local to let everything start after each reboot.**
 ```
