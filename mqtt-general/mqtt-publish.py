@@ -39,6 +39,7 @@ class Setting:
     def __init__(self):
         #system general setting
         self.debug_enable = debug_enable
+        self.sensor_localtion = sensor_location
         self.mqtt_server = mqtt_server
         self.mqtt_port = mqtt_port
         self.username = username
@@ -81,7 +82,7 @@ def main():
         while True:
             for sensor in sensor_types:
                 payload_str = get_reading_csv(sensor)
-                topic = sEtting.device_id + "/" + sensor
+                topic = sEtting.sensor_localtion + "/" + sensor
                 if sEtting.debug_enable == 1:
                     print payload_str + ", " + topic
                 mqttc = mqtt.Client(sEtting.device_id)
