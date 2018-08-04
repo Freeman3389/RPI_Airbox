@@ -130,6 +130,7 @@
   },
   "mqtt-general": {
     "status": "0",
+    "debug_enable": "0",
     "executable_path": "mqtt-general/mqtt-publish.py",
     "sensor_name": "mqtt-general",
     "mqtt_server": "[your MQTT broker]",

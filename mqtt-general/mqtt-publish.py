@@ -23,6 +23,7 @@ with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handl
 sensor_location = str(configs['global']['sensor_location'])
 data_path = str(configs['global']['base_path'] + configs['global']['csv_path'])
 sensor_name = str(configs['mqtt-general']['sensor_name'])
+debug_enable = int(configs[sensor_name]['debug_enable'])
 update_interval = int(configs[sensor_name]['update_interval'])
 latest_log_interval = int(configs[sensor_name]['update_interval'])
 mqtt_server = str(configs[sensor_name]['mqtt_server'])
@@ -37,6 +38,7 @@ syslog.openlog(sys.argv[0], syslog.LOG_PID)
 class Setting:
     def __init__(self):
         #system general setting
+        self.debug_enable = debug_enable
         self.mqtt_server = mqtt_server
         self.mqtt_port = mqtt_port
         self.username = username
@@ -76,21 +78,23 @@ def main():
 
         atexit.register(all_done)
         write_pidfile()
-        for sensor in sensor_types:
-            payload_str = get_reading_csv(sensor)
-            topic = sEtting.device_id + "/" + sensor
-            mqttc = mqtt.Client(sEtting.device_id)
-            mqttc.username_pw_set(username, password=passwd)
-            mqttc.connect(sEtting.mqtt_server, sEtting.mqtt_port, 60)
-            #Publishing to MQTT broker
-            mqttc.loop_start()
-            localtime = datetime.datetime.now()
-            mqttc.publish(topic, payload_str, qos=0, retain=False)
-            time.sleep(1)
-
-        mqttc.loop_stop()
-        mqttc.disconnect()
-        time.sleep(update_interval)
+        while True:
+            for sensor in sensor_types:
+                payload_str = get_reading_csv(sensor)
+                topic = sEtting.device_id + "/" + sensor
+                if sEtting.debug_enable == 1:
+                    print payload_str + ", " + topic
+                mqttc = mqtt.Client(sEtting.device_id)
+                mqttc.username_pw_set(username, password=passwd)
+                mqttc.connect(sEtting.mqtt_server, sEtting.mqtt_port, 60)
+                #Publishing to MQTT broker
+                mqttc.loop_start()
+                localtime = datetime.datetime.now()
+                mqttc.publish(topic, payload_str, qos=0, retain=False)
+                time.sleep(1)
+                mqttc.loop_stop()
+            mqttc.disconnect()
+            time.sleep(update_interval)
 
     except IOError, ioer:
         syslog.syslog(syslog.LOG_WARNING, "Main thread was died: IOError: %s" % (ioer))
