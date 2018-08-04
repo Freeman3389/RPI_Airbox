@@ -22,7 +22,7 @@ with open(os.path.abspath(__file__ + '/../..') + '/settings.json') as json_handl
     configs = json.load(json_handle)
 sensor_location = str(configs['global']['sensor_location'])
 data_path = str(configs['global']['base_path'] + configs['global']['csv_path'])
-sensor_name = str(configs['mqtt']['sensor_name'])
+sensor_name = str(configs['mqtt-general']['sensor_name'])
 update_interval = int(configs[sensor_name]['update_interval'])
 latest_log_interval = int(configs[sensor_name]['update_interval'])
 mqtt_server = str(configs[sensor_name]['mqtt_server'])
