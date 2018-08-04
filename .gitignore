@@ -65,3 +65,7 @@ target/
 # Documents
 Docs/
 *.md
+
+# Configuration file
+settings.json
+qiot/
