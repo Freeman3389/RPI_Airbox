@@ -15,6 +15,7 @@ import collections
 import syslog
 import atexit
 import paho.mqtt.client as mqtt
+import sys
 from gps import *
 from uuid import getnode as get_mac
 
@@ -43,6 +44,7 @@ pid_file = str(configs['global']['base_path']) + sensor_name + '.pid'
 syslog.openlog(sys.argv[0], syslog.LOG_PID)
 gpsd = None
 
+
 class Setting:
     def __init__(self):
         #system general setting
@@ -59,25 +61,26 @@ class Setting:
         self.passwd = passwd
         self.app = "RPi_Airbox"
         self.device_id = self.app + '_' + format(get_mac(), 'x')[-6:]
-        self.ver_format = 3 #Default 3,: filter parameter when filter_par_type=2
+        self.ver_format = 3  # Default 3,: filter parameter when filter_par_type=2
         self.ver_app = "0.8.3"
         self.device = "RaspberryPi_3"
         self.sensor_types = ['temperature', 'humidity', 'pm25-at', 'pm10-at']
-        self.payload_header = ('ver_format', 'FAKE_GPS', 'app', 'ver_app', 'device_id', 'date', 'time', 'device', 's_d0', 's_t0', 's_h0', 's_d1', 'gps_lat', 'gps_lon', 'gps_fix', 'gps_num', 'gps_alt')
+        self.payload_header = ('ver_format', 'FAKE_GPS', 'app', 'ver_app', 'device_id', 'date', 'time',
+                               'device', 's_d0', 's_t0', 's_h0', 's_d1', 'gps_lat', 'gps_lon', 'gps_fix', 'gps_num', 'gps_alt')
 
 
 class GpsPoller(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        global gpsd #bring it in scope
-        gpsd = gps(mode=WATCH_ENABLE) #starting the stream of info
+        global gpsd  # bring it in scope
+        gpsd = gps(mode=WATCH_ENABLE)  # starting the stream of info
         self.current_value = None
-        self.running = True #setting the thread running to true
+        self.running = True  # setting the thread running to true
 
     def run(self):
         global gpsd
         while gpsp.running:
-            gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
+            gpsd.next()  # this will continue to loop and grab EACH set of gpsd info to clear the buffer
 
 
 def data_process():
@@ -120,12 +123,13 @@ def data_process():
         value_dict["gps_fix"] = gpsd.fix.mode
     value_dict["gps_num"] = 0
     #if debug_enable == '0':
-    msg = "|" + "|".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
+    msg = "|" + "|".join(["=".join([key, str(val)])
+                          for key, val in value_dict.items()])
     return msg
     #elif debug_enable == '1':
     #    msg_debug = ",".join(["=".join([key, str(val)]) for key, val in value_dict.items()])
     #    return msg_debug
-    
+
 
 def get_reading_csv(sensor):
     """Get sensor readings from latest value csv files in sensor-value folder."""
@@ -137,6 +141,7 @@ def get_reading_csv(sensor):
         for row in csvreader:
             sensor_reading = row[1]  # get second value
     return sensor_reading
+
 
 def get_gps():
     """check fix status of gpsd"""
@@ -154,11 +159,11 @@ def main():
     try:
         global localtime
         global value_dict
+
         def all_done():
             """Define atexit function"""
             pid = str(pid_file)
             os.remove(pid)
-
 
         def write_pidfile():
             """Setup PID file"""
@@ -166,7 +171,6 @@ def main():
             f_pid = open(pid_file, 'w')
             f_pid.write(pid)
             f_pid.close()
-
 
         atexit.register(all_done)
         mqttc = mqtt.Client(sEtting.clientid)
@@ -181,14 +185,16 @@ def main():
             if sEtting.debug_enable == 1:
                 print payload_str
             #msg = json.JSONEncoder().encode(payload_str)
-            (result, mid) = mqttc.publish(sEtting.mqtt_topic, payload_str, qos=0, retain=False)
+            (result, mid) = mqttc.publish(
+                sEtting.mqtt_topic, payload_str, qos=0, retain=False)
             time.sleep(update_interval)
 
         mqttc.loop_stop()
         mqttc.disconnect()
 
     except IOError, ioer:
-        syslog.syslog(syslog.LOG_WARNING, "Main thread was died: IOError: %s" % (ioer))
+        syslog.syslog(syslog.LOG_WARNING,
+                      "Main thread was died: IOError: %s" % (ioer))
         pass
 
     except KeyboardInterrupt:
@@ -203,8 +209,8 @@ if __name__ == '__main__':
     try:
         gpsp.start()
         main()
-    except (KeyboardInterrupt, SystemExit): #when you press ctrl+c
+    except (KeyboardInterrupt, SystemExit):  # when you press ctrl+c
         print "\nKilling Thread..."
         gpsp.running = False
-        gpsp.join() # wait for the thread to finish what it's doing
+        gpsp.join()  # wait for the thread to finish what it's doing
     print "Done.\nExiting."
