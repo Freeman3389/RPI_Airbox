@@ -332,7 +332,7 @@ $ tail -f /var/log/syslog | grep snmp
 ### ii) Modify channel content if necessary
 
 
-## 10. Set up MQTT upload module
+## 10. Set up MQTT upload to LASS (Please refer to http://lass-net.org/) module
 ### i) install necessary module
 ```
 sudo -HE pip install paho-mqtt
@@ -344,11 +344,21 @@ sudo -HE pip install paho-mqtt
 - "username"                                                             # Preserve for Node-Red MQTT, not ready yet.
 - "passwd"                                                               # Preserve for Node-Red MQTT, not ready yet.
 
+## 11. Set up module for MQTT publishing to general Broker 
+### i) install necessary module
+```
+sudo -HE pip install paho-mqtt
+```
+### ii) Check Module settings in settings.json
+- "status" => "1"
+- "debug-enable" => "0"                                                  # If you need to check output value, set to "1"
+- "username"                                                             # 
+- "passwd"                                                               # Preserve for Node-Red MQTT, not ready yet.
 
-## 10. Set up Monitor Web module
+## 12. Set up Monitor Web module
 Not ready yet
 
-## 11. Set up automatical execution programs after reboot.
+## 13. Set up automatical execution programs after reboot.
 
 ### i) Make sure the owner of "/opt/RPi_Airbox" is rpisensor
 ```

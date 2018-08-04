@@ -6,9 +6,9 @@
     "csv_path": "monitor_web/sensor_values/",
     "enable_history": "0",
     "fake_gps": "0",
-    "fgps_lon": "121.3713162",
-    "fgps_lat": "25.055752",
-    "fgps_alt": "0.0",
+    "fgps_lon": "[your longitude]",
+    "fgps_lat": "[your latitude]",
+    "fgps_alt": "[your altitude]",
     "loading_order": [
       "dht22",
       "pms3003",
@@ -133,6 +133,7 @@
   },
   "mqtt-general": {
     "status": "1",
+    "debug_enable": "0",
     "executable_path": "mqtt-general/mqtt-publish.py",
     "sensor_name": "mqtt-general",
     "mqtt_server": "[your MQTT broker]",

@@ -85,7 +85,8 @@ def main():
                 if sEtting.debug_enable == 1:
                     print payload_str + ", " + topic
                 mqttc = mqtt.Client(sEtting.device_id)
-                mqttc.username_pw_set(username, password=passwd)
+                if all([sEtting.username or sEtting.passwd]):
+                    mqttc.username_pw_set(username, password=passwd)
                 mqttc.connect(sEtting.mqtt_server, sEtting.mqtt_port, 60)
                 #Publishing to MQTT broker
                 mqttc.loop_start()

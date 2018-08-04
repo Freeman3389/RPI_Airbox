@@ -185,6 +185,8 @@ def main():
             if sEtting.debug_enable == 1:
                 print payload_str
             #msg = json.JSONEncoder().encode(payload_str)
+            if all([sEtting.username or sEtting.passwd]):
+                    mqttc.username_pw_set(username, password=passwd)
             (result, mid) = mqttc.publish(
                 sEtting.mqtt_topic, payload_str, qos=0, retain=False)
             time.sleep(update_interval)
